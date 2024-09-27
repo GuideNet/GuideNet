@@ -11,13 +11,22 @@ const server = http.createServer(app)
 const socketIo = require("socket.io")
 const io = socketIo(server, {
   cors: {
-    origin: "*", // Adjust this to your client's origin in production
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://guidenet.vercel.app/"
+        : "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 })
 
 // Middleware
 app.use(cors())
 app.use(express.json())
+
+// Set up Multer with memory storage
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 
 // Routes
 const authRoutes = require("./routes/auth")
@@ -104,21 +113,6 @@ mongoose
   })
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err))
-
-// Set up Multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads/")
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    )
-  },
-})
-
-const upload = multer({ storage: storage })
 
 // Serve static files in production
 if (process.env.NODE_ENV === "production") {

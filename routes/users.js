@@ -1,12 +1,14 @@
 const express = require("express")
 const router = express.Router()
+const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+const { check, validationResult } = require("express-validator")
 const User = require("../models/User")
-const auth = require("../middleware/authMiddleware") // Import the auth middleware
+const auth = require("../middleware/auth")
 const multer = require("multer")
-const fs = require("fs")
-const path = require("path")
 
-const upload = multer({ dest: "uploads/" })
+// Set up Multer with memory storage
+const upload = multer({ storage: multer.memoryStorage() })
 
 // @route   GET api/users/:id
 // @desc    Get user data by ID
@@ -85,6 +87,23 @@ router.get("/avatar/:id", async (req, res) => {
     console.error("Error fetching avatar:", err)
     res.status(500).send("Server Error")
   }
+})
+
+// If you have a file upload route, modify it like this:
+router.post("/upload", auth, upload.single("file"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.")
+  }
+
+  // Here, instead of saving to disk, you can process the file in memory
+  // or send it to a cloud storage service
+
+  // Example: just sending back the file details
+  res.json({
+    filename: req.file.originalname,
+    mimetype: req.file.mimetype,
+    size: req.file.size,
+  })
 })
 
 module.exports = router
