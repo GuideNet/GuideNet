@@ -41,70 +41,6 @@ app.use("/api/posts", postRoutes)
 app.use("/api/mentors", mentorRoutes)
 app.use("/api/chats", chatRoutes)
 
-app.get("/", (req, res) => {
-  res.send("Welcome to GuideNet API")
-})
-
-// **User Mapping for Socket.io**
-const users = {} // Object to store userId: socketId mappings
-
-// Socket.io Events
-io.on("connection", (socket) => {
-  console.log("New client connected:", socket.id)
-
-  // **Event to register a user with their userId**
-  socket.on("registerUser", (userId) => {
-    users[userId] = socket.id
-    socket.userId = userId
-    console.log(`User ${userId} registered with socket ID ${socket.id}`)
-  })
-
-  // Event for joining a chat room
-  socket.on("joinChat", (chatId) => {
-    socket.join(chatId)
-    socket.chatId = chatId
-    console.log(`Socket ${socket.id} joined chat ${chatId}`)
-  })
-
-  // Event for sending messages
-  socket.on("sendMessage", ({ chatId, message }) => {
-    // Broadcast the message to others in the chat room
-    socket.to(chatId).emit("message", message)
-    console.log(`Message sent to chat ${chatId}:`, message)
-  })
-
-  // **Event for initiating a call**
-  socket.on("callUser", ({ userToCall, signal, from }) => {
-    const socketIdToCall = users[userToCall]
-    if (socketIdToCall) {
-      io.to(socketIdToCall).emit("callUser", { signal, from })
-      console.log(`Calling user ${userToCall} from ${from}`)
-    } else {
-      console.log(`User ${userToCall} is not connected`)
-    }
-  })
-
-  // **Event for accepting a call**
-  socket.on("acceptCall", ({ signal, to }) => {
-    const socketIdToCall = users[to]
-    if (socketIdToCall) {
-      io.to(socketIdToCall).emit("callAccepted", signal)
-      console.log(`Call accepted by ${socket.userId} to ${to}`)
-    } else {
-      console.log(`User ${to} is not connected`)
-    }
-  })
-
-  // Handle disconnect
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id)
-    if (socket.userId) {
-      delete users[socket.userId]
-      console.log(`User ${socket.userId} removed from users list`)
-    }
-  })
-})
-
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI, {
@@ -114,11 +50,36 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err))
 
+// Socket.IO connection handling
+io.on("connection", (socket) => {
+  console.log("New client connected")
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected")
+  })
+
+  // Add any other socket event handlers here
+})
+
 // Serve static files in production
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static("client/build"))
+  app.use(express.static(path.join(__dirname, "client/build")))
+
+  // Handle API routes
+  app.use("/api", (req, res, next) => {
+    if (req.path.startsWith("/api")) {
+      next()
+    }
+  })
+
+  // For any other routes, serve the React app
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"))
+  })
+} else {
+  // In development, keep the API route
+  app.get("/", (req, res) => {
+    res.send("Welcome to GuideNet API")
   })
 }
 
