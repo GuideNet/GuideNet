@@ -1,0 +1,95 @@
+.register-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f8f8f8;
+}
+
+.register-title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.register-input {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.register-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.register-button,
+.home-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.register-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.home-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.register-button:hover {
+  background-color: #218838;
+}
+
+.home-button:hover {
+  background-color: #5a6268;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.modal-button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-button:hover {
+  background-color: #0056b3;
+}
