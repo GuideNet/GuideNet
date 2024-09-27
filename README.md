@@ -12,7 +12,7 @@ This guide will help you set up the project on your local machine.
 
 ### 1. Clone the Repository
 
-    git clone https://github.com/GilbertChenHoltville/GuideNet
+    git clone https://github.com/GuideNet/GuideNet
     cd GuideNet
 
 ### 2. Install Dependencies
