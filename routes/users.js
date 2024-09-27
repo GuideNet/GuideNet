@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const { check, validationResult } = require("express-validator")
 const User = require("../models/User")
-const auth = require("../middleware/auth")
+const auth = require("../middleware/authMiddleware")
 const multer = require("multer")
 
 // Set up Multer with memory storage
