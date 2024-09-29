@@ -13,7 +13,7 @@ const io = socketIo(server, {
   cors: {
     origin:
       process.env.NODE_ENV === "production"
-        ? "https://guidenet.onrender.com/"
+        ? "https://guidenet.co/"
         : "http://localhost:3000",
     methods: ["GET", "POST"],
     credentials: true,
@@ -24,7 +24,7 @@ const io = socketIo(server, {
 const corsOptions = {
   origin:
     process.env.NODE_ENV === "production"
-      ? "https://guidenet.onrender.com/"
+      ? "https://guidenet.co/"
       : "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
