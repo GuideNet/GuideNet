@@ -29,6 +29,7 @@ import Profile from "./Profile"
 import Explore from "./Explore"
 import Chats from "./Chats"
 import Community from "./Community"
+import api from "../utils/api"
 
 const Dashboard = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -123,11 +124,7 @@ const Dashboard = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await axios.get("/api/posts", {
-        headers: {
-          "x-auth-token": localStorage.getItem("token"),
-        },
-      })
+      const res = await api.get("/posts")
       setCommunityPosts(res.data)
     } catch (err) {
       console.error("Error fetching posts:", err)
@@ -136,12 +133,7 @@ const Dashboard = () => {
 
   const handleAddPost = async (newPost) => {
     try {
-      const res = await axios.post("/api/posts", newPost, {
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": localStorage.getItem("token"),
-        },
-      })
+      const res = await api.post("/posts", newPost)
 
       const fullNewPost = {
         ...res.data,
@@ -159,15 +151,7 @@ const Dashboard = () => {
 
   const handleLikePost = async (postId) => {
     try {
-      const res = await axios.put(
-        `/api/posts/like/${postId}`,
-        {},
-        {
-          headers: {
-            "x-auth-token": localStorage.getItem("token"),
-          },
-        }
-      )
+      const res = await api.put(`/posts/like/${postId}`, {})
       setCommunityPosts((prevPosts) =>
         prevPosts.map((post) =>
           post._id === postId ? { ...post, likes: res.data } : post
@@ -180,16 +164,9 @@ const Dashboard = () => {
 
   const handleCommentPost = async (postId, commentText) => {
     try {
-      const res = await axios.post(
-        `/api/posts/comment/${postId}`,
-        { text: commentText },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("token"),
-          },
-        }
-      )
+      const res = await api.post(`/posts/comment/${postId}`, {
+        text: commentText,
+      })
 
       setCommunityPosts((prevPosts) =>
         prevPosts.map((post) =>

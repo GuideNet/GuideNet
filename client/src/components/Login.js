@@ -1,7 +1,7 @@
 import React, { useState } from "react"
-import axios from "axios"
 import { Link, useNavigate } from "react-router-dom"
 import "./Login.css" // Import the CSS file
+import api from "../utils/api" // Use the api instance
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +20,7 @@ const Login = () => {
   const onSubmit = async (e) => {
     e.preventDefault()
     try {
-      const res = await axios.post("/api/auth/login", formData)
+      const res = await api.post("/auth/login", formData) // Updated
       console.log(res.data) // Token received
       localStorage.setItem("token", res.data.token)
       setSuccess("Login successful! Redirecting to dashboard...")
