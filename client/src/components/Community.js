@@ -22,7 +22,7 @@ import {
   Search,
 } from "@mui/icons-material"
 import AuthorDetailsPopup from "./AuthorDetailsPopup"
-import axios from "axios"
+import api from "../utils/api"
 
 const Community = ({
   searchQuery,
@@ -66,18 +66,11 @@ const Community = ({
     console.log("Author clicked:", author)
     try {
       let completeAuthorDetails
-      const token = localStorage.getItem("token") // Get the authentication token
-      const config = {
-        headers: { "x-auth-token": token },
-      }
-
+      // No need to manually set headers as api intercepts and attaches the token
       // First, try to fetch mentor details
       try {
         console.log("Attempting to fetch mentor details")
-        const mentorResponse = await axios.get(
-          `/api/mentors/user/${author._id}`,
-          config
-        )
+        const mentorResponse = await api.get(`/mentors/user/${author._id}`)
         console.log("Mentor API response:", mentorResponse.data)
         completeAuthorDetails = {
           ...mentorResponse.data,
@@ -92,7 +85,7 @@ const Community = ({
         )
         // If not a mentor, fetch user details
         console.log("Fetching user details")
-        const userResponse = await axios.get(`/api/users/${author._id}`, config)
+        const userResponse = await api.get(`/users/${author._id}`)
         console.log("User API response:", userResponse.data)
         completeAuthorDetails = {
           ...userResponse.data,

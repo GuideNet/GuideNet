@@ -14,7 +14,7 @@ import {
   Snackbar,
 } from "@mui/material"
 import { styled } from "@mui/material/styles"
-import axios from "axios"
+import api from "../utils/api"
 
 const Input = styled("input")({
   display: "none",
@@ -47,9 +47,7 @@ const Profile = ({ userData, onUpdateProfile }) => {
 
   const fetchMentorData = async (mentorId) => {
     try {
-      const res = await axios.get(`/api/mentors/${mentorId}`, {
-        headers: { "x-auth-token": localStorage.getItem("token") },
-      })
+      const res = await api.get(`/mentors/${mentorId}`)
       setMentorData(res.data)
     } catch (err) {
       console.error("Error fetching mentor data:", err)
@@ -90,12 +88,7 @@ const Profile = ({ userData, onUpdateProfile }) => {
 
   const handleSaveMentorData = async () => {
     try {
-      const res = await axios.post("/api/mentors", mentorData, {
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": localStorage.getItem("token"),
-        },
-      })
+      const res = await api.post("/mentors", mentorData)
       setSnackbar({ open: true, message: "Mentor profile saved successfully!" })
       onUpdateProfile({ ...userData, mentor: res.data._id })
     } catch (err) {
