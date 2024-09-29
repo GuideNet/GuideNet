@@ -13,7 +13,7 @@ const io = socketIo(server, {
   cors: {
     origin:
       process.env.NODE_ENV === "production"
-        ? "https://guidenet.vercel.app/"
+        ? "https://guidenet.onrender.com/"
         : "http://localhost:3000",
     methods: ["GET", "POST"],
     credentials: true,
@@ -21,7 +21,15 @@ const io = socketIo(server, {
 })
 
 // Middleware
-app.use(cors())
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? "https://guidenet.onrender.com/"
+      : "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}
+app.use(cors(corsOptions))
 app.use(express.json())
 
 // Set up Multer with memory storage
@@ -50,15 +58,35 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err))
 
-// Socket.IO connection handling
+// Socket.IO Event Handling
 io.on("connection", (socket) => {
-  console.log("New client connected")
+  console.log("New client connected:", socket.id)
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected")
+  socket.on("registerUser", (userId) => {
+    socket.join(userId)
+    console.log(`User registered and joined room: ${userId}`)
   })
 
-  // Add any other socket event handlers here
+  socket.on("sendMessage", ({ chatId, message }) => {
+    io.to(chatId).emit("message", message)
+  })
+
+  socket.on("callUser", ({ userToCall, signal, from }) => {
+    io.to(userToCall).emit("callUser", { signal, from })
+  })
+
+  socket.on("acceptCall", ({ signal, to }) => {
+    io.to(to).emit("callAccepted", signal)
+  })
+
+  socket.on("joinChat", (chatId) => {
+    socket.join(chatId)
+    console.log(`Socket ${socket.id} joined chat room: ${chatId}`)
+  })
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id)
+  })
 })
 
 // Serve static files in production

@@ -17,9 +17,9 @@ import {
 } from "@mui/material"
 import VideoCallIcon from "@mui/icons-material/VideoCall"
 import CloseIcon from "@mui/icons-material/Close"
-import axios from "axios"
+import api from "../utils/api"
 import SimplePeer from "simple-peer"
-import io from "socket.io-client"
+import { io } from "socket.io-client"
 
 const Chats = ({ selectedUser, userData }) => {
   const [chats, setChats] = useState([])
@@ -50,8 +50,10 @@ const Chats = ({ selectedUser, userData }) => {
   }, [selectedUser])
 
   useEffect(() => {
-    // Initialize Socket.io
-    socketRef.current = io("http://localhost:5000") // Replace with your server URL
+    // Initialize Socket.io with environment variable
+    const socketUrl =
+      process.env.REACT_APP_SOCKET_URL || "http://localhost:5000"
+    socketRef.current = io(socketUrl)
 
     // Register the user after the socket connection is established
     socketRef.current.on("connect", () => {
@@ -108,11 +110,11 @@ const Chats = ({ selectedUser, userData }) => {
         socketRef.current.disconnect()
       }
     }
-  }, [selectedChat, userData._id, peer]) // Added 'peer' to the dependency array
+  }, [selectedChat, userData._id, peer])
 
   const fetchChats = async () => {
     try {
-      const response = await axios.get("/api/chats", {
+      const response = await api.get("/chats", {
         headers: { "x-auth-token": localStorage.getItem("token") },
       })
       setChats(response.data)
@@ -123,8 +125,8 @@ const Chats = ({ selectedUser, userData }) => {
 
   const createOrSelectChat = async (user) => {
     try {
-      const response = await axios.post(
-        "/api/chats",
+      const response = await api.post(
+        "/chats",
         { participantId: user._id },
         {
           headers: { "x-auth-token": localStorage.getItem("token") },
@@ -147,8 +149,8 @@ const Chats = ({ selectedUser, userData }) => {
     if (!selectedChat || !message.trim()) return
 
     try {
-      const response = await axios.post(
-        `/api/chats/${selectedChat._id}/messages`,
+      const response = await api.post(
+        `/chats/${selectedChat._id}/messages`,
         {
           content: message,
         },
@@ -299,7 +301,7 @@ const Chats = ({ selectedUser, userData }) => {
 
   return (
     <Box display="flex">
-      {/* Existing Chat UI */}
+      {/* Chats Sidebar */}
       <Box width="30%" borderRight={1} borderColor="divider">
         <Typography variant="h6" p={2}>
           Chats
@@ -321,6 +323,8 @@ const Chats = ({ selectedUser, userData }) => {
           ))}
         </List>
       </Box>
+
+      {/* Chats Content */}
       <Box width="70%" p={2}>
         {selectedChat ? (
           <>
