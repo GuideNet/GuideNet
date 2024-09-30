@@ -32,6 +32,10 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use(express.json())
 
+// Set up Multer with memory storage
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
+
 // Routes
 const authRoutes = require("./routes/auth")
 const userRoutes = require("./routes/users")
@@ -44,6 +48,15 @@ app.use("/api/users", userRoutes)
 app.use("/api/posts", postRoutes)
 app.use("/api/mentors", mentorRoutes)
 app.use("/api/chats", chatRoutes)
+
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log(err))
 
 // **User Mapping for Socket.io**
 const users = {} // Object to store userId: socketId mappings
@@ -116,32 +129,30 @@ io.on("connection", (socket) => {
   })
 })
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+// Serve static files in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "client/build")))
+
+  // Handle API routes
+  app.use("/api", (req, res, next) => {
+    if (req.path.startsWith("/api")) {
+      next()
+    }
   })
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log(err))
 
-// Set up Multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads/")
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    )
-  },
-})
-
-const upload = multer({ storage: storage })
+  // For any other routes, serve the React app
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"))
+  })
+} else {
+  // In development, keep the API route
+  app.get("/", (req, res) => {
+    res.send("Welcome to GuideNet API")
+  })
+}
 
 // Start the server
 const PORT = process.env.PORT || 5000
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
