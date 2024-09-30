@@ -4,6 +4,7 @@ import Register from "./components/Register"
 import Login from "./components/Login"
 import Home from "./components/Home"
 import Dashboard from "./components/Dashboard"
+import VideoCall from "./components/Videocall"
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/video-call/:chatId" element={<VideoCall />} />
         {/* Add other routes here */}
       </Routes>
     </Router>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect } from "react"
 import {
   Box,
   Typography,
@@ -9,35 +9,18 @@ import {
   Button,
   Avatar,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  AppBar,
-  Toolbar,
 } from "@mui/material"
 import VideoCallIcon from "@mui/icons-material/VideoCall"
-import CloseIcon from "@mui/icons-material/Close"
-import api from "../utils/api"
-import SimplePeer from "simple-peer"
-import { io } from "socket.io-client"
+import axios from "axios"
+import io from "socket.io-client"
+import { useNavigate } from "react-router-dom"
 
 const Chats = ({ selectedUser, userData }) => {
   const [chats, setChats] = useState([])
   const [selectedChat, setSelectedChat] = useState(null)
   const [message, setMessage] = useState("")
-  const [peer, setPeer] = useState(null)
-  const [stream, setStream] = useState(null)
-  const [videoCallOpen, setVideoCallOpen] = useState(false)
-  const [callState, setCallState] = useState({
-    receivingCall: false,
-    callAccepted: false,
-    callerSignal: null,
-    callerId: null,
-  })
-
-  const localVideoRef = useRef()
-  const remoteVideoRef = useRef()
-  const socketRef = useRef()
+  const socketRef = React.useRef()
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchChats()
@@ -50,10 +33,8 @@ const Chats = ({ selectedUser, userData }) => {
   }, [selectedUser])
 
   useEffect(() => {
-    // Initialize Socket.io with environment variable
-    const socketUrl =
-      process.env.REACT_APP_SOCKET_URL || "http://localhost:5000"
-    socketRef.current = io(socketUrl)
+    // Initialize Socket.io
+    socketRef.current = io("http://localhost:5000") // Replace with your server URL
 
     // Register the user after the socket connection is established
     socketRef.current.on("connect", () => {
@@ -70,30 +51,8 @@ const Chats = ({ selectedUser, userData }) => {
       }))
     }
 
-    const handleCallUser = ({ signal, from }) => {
-      console.log(`Incoming call from ${from}`)
-      setCallState({
-        receivingCall: true,
-        callerSignal: signal,
-        callerId: from,
-      })
-    }
-
-    const handleCallAccepted = (signal) => {
-      console.log("Call accepted")
-      setCallState((prevState) => ({
-        ...prevState,
-        callAccepted: true,
-      }))
-      if (peer) {
-        peer.signal(signal)
-      }
-    }
-
     // Attach event listeners
     socketRef.current.on("message", handleMessage)
-    socketRef.current.on("callUser", handleCallUser)
-    socketRef.current.on("callAccepted", handleCallAccepted)
 
     // Join the chat room
     if (selectedChat) {
@@ -104,17 +63,15 @@ const Chats = ({ selectedUser, userData }) => {
     return () => {
       // Clean up event listeners
       socketRef.current.off("message", handleMessage)
-      socketRef.current.off("callUser", handleCallUser)
-      socketRef.current.off("callAccepted", handleCallAccepted)
       if (socketRef.current) {
         socketRef.current.disconnect()
       }
     }
-  }, [selectedChat, userData._id, peer])
+  }, [selectedChat, userData._id])
 
   const fetchChats = async () => {
     try {
-      const response = await api.get("/chats", {
+      const response = await axios.get("/api/chats", {
         headers: { "x-auth-token": localStorage.getItem("token") },
       })
       setChats(response.data)
@@ -125,8 +82,8 @@ const Chats = ({ selectedUser, userData }) => {
 
   const createOrSelectChat = async (user) => {
     try {
-      const response = await api.post(
-        "/chats",
+      const response = await axios.post(
+        "/api/chats",
         { participantId: user._id },
         {
           headers: { "x-auth-token": localStorage.getItem("token") },
@@ -149,8 +106,8 @@ const Chats = ({ selectedUser, userData }) => {
     if (!selectedChat || !message.trim()) return
 
     try {
-      const response = await api.post(
-        `/chats/${selectedChat._id}/messages`,
+      const response = await axios.post(
+        `/api/chats/${selectedChat._id}/messages`,
         {
           content: message,
         },
@@ -171,137 +128,14 @@ const Chats = ({ selectedUser, userData }) => {
     }
   }
 
-  const initiateVideoCall = async () => {
-    try {
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      })
-      setStream(localStream)
-
-      const newPeer = new SimplePeer({
-        initiator: true,
-        trickle: false,
-        stream: localStream,
-      })
-
-      newPeer.on("signal", (signalData) => {
-        const calleeId = selectedChat.participants.find(
-          (p) => p._id !== userData._id
-        )._id
-
-        console.log("Initiating call to user ID:", calleeId)
-
-        // Send signal data to the callee via Socket.io
-        socketRef.current.emit("callUser", {
-          userToCall: calleeId,
-          signal: signalData,
-          from: userData._id,
-        })
-      })
-
-      newPeer.on("stream", (remoteStream) => {
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = remoteStream
-          console.log("Remote stream assigned to remoteVideoRef")
-        }
-      })
-
-      setPeer(newPeer)
-      setVideoCallOpen(true)
-
-      // Assign the local stream to the local video element
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream
-        console.log("Local stream assigned to localVideoRef")
-      }
-    } catch (error) {
-      console.error("Error initiating video call:", error)
-      alert("Error initiating video call: " + error.message)
+  const initiateVideoCall = () => {
+    if (selectedChat) {
+      navigate(`/video-call/${selectedChat._id}`)
     }
   }
-
-  const acceptCall = async () => {
-    try {
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      })
-      setStream(localStream)
-
-      const newPeer = new SimplePeer({
-        initiator: false,
-        trickle: false,
-        stream: localStream,
-      })
-
-      newPeer.on("signal", (signalData) => {
-        // Send signal data back to the caller via Socket.io
-        socketRef.current.emit("acceptCall", {
-          signal: signalData,
-          to: callState.callerId,
-        })
-      })
-
-      newPeer.on("stream", (remoteStream) => {
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = remoteStream
-          console.log("Remote stream assigned to remoteVideoRef")
-        }
-      })
-
-      newPeer.signal(callState.callerSignal)
-      setPeer(newPeer)
-      setCallState((prevState) => ({
-        ...prevState,
-        callAccepted: true,
-        receivingCall: false,
-      }))
-      setVideoCallOpen(true)
-
-      // Assign the local stream to the local video element
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream
-        console.log("Local stream assigned to localVideoRef")
-      }
-    } catch (error) {
-      console.error("Error accepting call:", error)
-      alert("Error accepting call: " + error.message)
-    }
-  }
-
-  const closeVideoCall = () => {
-    setVideoCallOpen(false)
-    if (peer) {
-      peer.destroy()
-      setPeer(null)
-    }
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop())
-      setStream(null)
-    }
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = null
-    }
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = null
-    }
-    setCallState({
-      receivingCall: false,
-      callAccepted: false,
-      callerSignal: null,
-      callerId: null,
-    })
-  }
-
-  // Get the remote user's information
-  const remoteUser =
-    selectedChat &&
-    selectedChat.participants.find((p) => p._id !== userData._id)
 
   return (
     <Box display="flex">
-      {/* Chats Sidebar */}
       <Box width="30%" borderRight={1} borderColor="divider">
         <Typography variant="h6" p={2}>
           Chats
@@ -323,8 +157,6 @@ const Chats = ({ selectedUser, userData }) => {
           ))}
         </List>
       </Box>
-
-      {/* Chats Content */}
       <Box width="70%" p={2}>
         {selectedChat ? (
           <>
@@ -337,10 +169,7 @@ const Chats = ({ selectedUser, userData }) => {
                 Chat:{" "}
                 {selectedChat.participants.map((p) => p.username).join(" and ")}
               </Typography>
-              <IconButton
-                onClick={initiateVideoCall}
-                disabled={videoCallOpen || callState.receivingCall}
-              >
+              <IconButton onClick={initiateVideoCall}>
                 <VideoCallIcon sx={{ color: "#F3C111" }} />
               </IconButton>
             </Box>
@@ -380,113 +209,6 @@ const Chats = ({ selectedUser, userData }) => {
           <Typography>Select a chat or start a new conversation</Typography>
         )}
       </Box>
-
-      {/* Video Call Dialog */}
-      <Dialog fullScreen open={videoCallOpen} onClose={closeVideoCall}>
-        <AppBar sx={{ position: "relative" }}>
-          <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={closeVideoCall}
-              aria-label="close"
-            >
-              <CloseIcon />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              Video Call with {remoteUser && remoteUser.username}
-            </Typography>
-            <Button autoFocus color="inherit" onClick={closeVideoCall}>
-              End Call
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Box display="flex" height="100%">
-          <Box flex={1} position="relative">
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            ></video>
-            <Typography
-              variant="h6"
-              style={{
-                position: "absolute",
-                top: 10,
-                left: 10,
-                color: "white",
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                padding: "5px 10px",
-                borderRadius: "5px",
-              }}
-            >
-              {userData.username}
-            </Typography>
-          </Box>
-          <Box flex={1} position="relative">
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            ></video>
-            <Typography
-              variant="h6"
-              style={{
-                position: "absolute",
-                top: 10,
-                left: 10,
-                color: "white",
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                padding: "5px 10px",
-                borderRadius: "5px",
-              }}
-            >
-              {remoteUser && remoteUser.username}
-            </Typography>
-          </Box>
-        </Box>
-      </Dialog>
-
-      {/* Incoming Call Notification */}
-      {callState.receivingCall && !callState.callAccepted && (
-        <Dialog
-          open={true}
-          onClose={() =>
-            setCallState((prevState) => ({
-              ...prevState,
-              receivingCall: false,
-            }))
-          }
-        >
-          <DialogTitle>Incoming Video Call</DialogTitle>
-          <DialogContent>
-            <Typography>{`${
-              selectedChat.participants.find(
-                (p) => p._id === callState.callerId
-              ).username
-            } is calling you.`}</Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button variant="contained" onClick={acceptCall}>
-                Accept
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() =>
-                  setCallState((prevState) => ({
-                    ...prevState,
-                    receivingCall: false,
-                  }))
-                }
-              >
-                Decline
-              </Button>
-            </Box>
-          </DialogContent>
-        </Dialog>
-      )}
     </Box>
   )
 }

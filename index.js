@@ -11,30 +11,13 @@ const server = http.createServer(app)
 const socketIo = require("socket.io")
 const io = socketIo(server, {
   cors: {
-    origin:
-      process.env.NODE_ENV === "production"
-        ? "https://guidenet.co/"
-        : "http://localhost:3000",
-    methods: ["GET", "POST"],
-    credentials: true,
+    origin: "*", // Adjust this to your client's origin in production
   },
 })
 
 // Middleware
-const corsOptions = {
-  origin:
-    process.env.NODE_ENV === "production"
-      ? "https://guidenet.co/"
-      : "http://localhost:3000",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json())
-
-// Set up Multer with memory storage
-const storage = multer.memoryStorage()
-const upload = multer({ storage: storage })
 
 // Routes
 const authRoutes = require("./routes/auth")
@@ -49,6 +32,81 @@ app.use("/api/posts", postRoutes)
 app.use("/api/mentors", mentorRoutes)
 app.use("/api/chats", chatRoutes)
 
+app.get("/", (req, res) => {
+  res.send("Welcome to GuideNet API")
+})
+
+// **User Mapping for Socket.io**
+const users = {} // Object to store userId: socketId mappings
+
+// Socket.io Events
+io.on("connection", (socket) => {
+  console.log("New client connected:", socket.id)
+
+  // **Event to register a user with their userId**
+  socket.on("registerUser", (userId) => {
+    users[userId] = socket.id
+    socket.userId = userId
+    console.log(`User ${userId} registered with socket ID ${socket.id}`)
+  })
+
+  // Event for joining a chat room
+  socket.on("joinChat", (chatId) => {
+    socket.join(chatId)
+    socket.chatId = chatId
+    console.log(`Socket ${socket.id} joined chat ${chatId}`)
+  })
+
+  // Event for sending messages
+  socket.on("sendMessage", ({ chatId, message }) => {
+    // Broadcast the message to others in the chat room
+    socket.to(chatId).emit("message", message)
+    console.log(`Message sent to chat ${chatId}:`, message)
+  })
+
+  // **Event for initiating a video call signal**
+  socket.on("videoCallSignal", ({ chatId, signal, isInitiator }) => {
+    // Broadcast the signal to the other user in the chat room
+    socket.to(chatId).emit("videoCallSignal", { signal, isInitiator })
+    console.log(
+      `Video call signal from ${socket.id} to chat ${chatId} | Initiator: ${isInitiator}`
+    )
+  })
+
+  // **Event for joining a video call**
+  socket.on("joinVideoCall", (chatId) => {
+    socket.join(chatId)
+    const clients = io.sockets.adapter.rooms.get(chatId)
+    const numClients = clients ? clients.size : 0
+    console.log(
+      `Socket ${socket.id} joined video call room ${chatId}. Total clients: ${numClients}`
+    )
+    if (numClients === 1) {
+      socket.emit("waitForCall")
+      console.log("Waiting for another participant to join the call.")
+    } else if (numClients === 2) {
+      // Emit 'initiateCall' only to the second user who joined
+      socket.emit("initiateCall")
+      console.log("Initiating call for the new participant.")
+    }
+  })
+
+  // **Event for ending a video call**
+  socket.on("endCall", (chatId) => {
+    socket.to(chatId).emit("callEnded")
+    console.log(`Call ended in chat ${chatId} by socket ${socket.id}`)
+  })
+
+  // Handle disconnect
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id)
+    if (socket.userId) {
+      delete users[socket.userId]
+      console.log(`User ${socket.userId} removed from users list`)
+    }
+  })
+})
+
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI, {
@@ -58,61 +116,23 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err))
 
-// Socket.IO Event Handling
-io.on("connection", (socket) => {
-  console.log("New client connected:", socket.id)
-
-  socket.on("registerUser", (userId) => {
-    socket.join(userId)
-    console.log(`User registered and joined room: ${userId}`)
-  })
-
-  socket.on("sendMessage", ({ chatId, message }) => {
-    io.to(chatId).emit("message", message)
-  })
-
-  socket.on("callUser", ({ userToCall, signal, from }) => {
-    io.to(userToCall).emit("callUser", { signal, from })
-  })
-
-  socket.on("acceptCall", ({ signal, to }) => {
-    io.to(to).emit("callAccepted", signal)
-  })
-
-  socket.on("joinChat", (chatId) => {
-    socket.join(chatId)
-    console.log(`Socket ${socket.id} joined chat room: ${chatId}`)
-  })
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id)
-  })
+// Set up Multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/")
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    )
+  },
 })
 
-// Serve static files in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")))
-
-  // Handle API routes
-  app.use("/api", (req, res, next) => {
-    if (req.path.startsWith("/api")) {
-      next()
-    }
-  })
-
-  // For any other routes, serve the React app
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"))
-  })
-} else {
-  // In development, keep the API route
-  app.get("/", (req, res) => {
-    res.send("Welcome to GuideNet API")
-  })
-}
+const upload = multer({ storage: storage })
 
 // Start the server
 const PORT = process.env.PORT || 5000
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+  console.log(`Server is running on port ${PORT}`)
 })
