@@ -11,12 +11,25 @@ const server = http.createServer(app)
 const socketIo = require("socket.io")
 const io = socketIo(server, {
   cors: {
-    origin: "*", // Adjust this to your client's origin in production
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://guidenet.co/"
+        : "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 })
 
 // Middleware
-app.use(cors())
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? "https://guidenet.co/"
+      : "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}
+app.use(cors(corsOptions))
 app.use(express.json())
 
 // Routes
