@@ -34,7 +34,7 @@ const Chats = ({ selectedUser, userData }) => {
 
   useEffect(() => {
     // Initialize Socket.io
-    socketRef.current = io("http://localhost:5000") // Replace with your server URL
+    socketRef.current = io(process.env.REACT_APP_SOCKET_URL)
 
     // Register the user after the socket connection is established
     socketRef.current.on("connect", () => {
