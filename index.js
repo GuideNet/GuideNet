@@ -32,10 +32,6 @@ app.use("/api/posts", postRoutes)
 app.use("/api/mentors", mentorRoutes)
 app.use("/api/chats", chatRoutes)
 
-app.get("/", (req, res) => {
-  res.send("Welcome to GuideNet API")
-})
-
 // **User Mapping for Socket.io**
 const users = {} // Object to store userId: socketId mappings
 
