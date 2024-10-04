@@ -92,7 +92,10 @@ const Profile = ({ userData, onUpdateProfile }) => {
       setSnackbar({ open: true, message: "Mentor profile saved successfully!" })
       onUpdateProfile({ ...userData, mentor: res.data._id })
     } catch (err) {
-      console.error("Error saving mentor profile:", err)
+      console.error(
+        "Error saving mentor profile:",
+        err.response ? err.response.data : err.message
+      )
       setSnackbar({
         open: true,
         message: "Error saving mentor profile. Please try again.",
