@@ -273,10 +273,15 @@ const Community = ({
               {post.comments && post.comments.length > 0 && (
                 <List>
                   {post.comments.map((comment, index) => {
+                    console.log("Processing comment:", comment) // Log the current comment
+                    console.log("Comment user ID:", comment.user._id) // Log the user ID of the comment
                     const avatarSrc =
                       comment.user._id !== undefined
                         ? `/api/users/avatar/${comment.user._id}`
                         : `/api/users/avatar/${comment.user._id}`
+
+                    console.log("Avatar source URL:", avatarSrc) // Log the avatar source URL
+
                     return (
                       <ListItem key={index} alignItems="flex-start">
                         <ListItemAvatar>
