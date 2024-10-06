@@ -33,7 +33,9 @@ import api from "../utils/api"
 
 const Dashboard = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [selectedSection, setSelectedSection] = useState("community")
+  const [selectedSection, setSelectedSection] = useState(
+    localStorage.getItem("selectedSection") || "community"
+  )
   const [selectedChatUser, setSelectedChatUser] = useState(null)
   const [userData, setUserData] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -56,6 +58,7 @@ const Dashboard = () => {
       console.log("Dashboard - location state:", location.state)
       if (newSection) {
         setSelectedSection(newSection)
+        localStorage.setItem("selectedSection", newSection) // Save to localStorage
         console.log("Dashboard - new selected section:", newSection)
       }
       if (chatUser) {
@@ -64,6 +67,11 @@ const Dashboard = () => {
       }
     }
   }, [location])
+
+  const handleSectionChange = (section) => {
+    setSelectedSection(section)
+    localStorage.setItem("selectedSection", section) // Save to localStorage
+  }
 
   const fetchUserData = async (userId, token) => {
     try {
@@ -90,10 +98,6 @@ const Dashboard = () => {
   const handleSearchChange = (event) => {
     console.log("Search input changed:", event.target.value)
     setSearchQuery(event.target.value)
-  }
-
-  const handleExploreClick = () => {
-    setSelectedSection("explore")
   }
 
   const handleUpdateProfile = async (updates) => {
@@ -250,25 +254,25 @@ const Dashboard = () => {
         <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           <List>
-            <ListItem button onClick={() => setSelectedSection("profile")}>
+            <ListItem button onClick={() => handleSectionChange("profile")}>
               <ListItemIcon sx={{ color: "#F3C111" }}>
                 <AccountCircle />
               </ListItemIcon>
               <ListItemText primary="Profile" />
             </ListItem>
-            <ListItem button onClick={handleExploreClick}>
+            <ListItem button onClick={() => handleSectionChange("explore")}>
               <ListItemIcon sx={{ color: "#F3C111" }}>
                 <ExploreIcon />
               </ListItemIcon>
               <ListItemText primary="Explore" />
             </ListItem>
-            <ListItem button onClick={() => setSelectedSection("chat")}>
+            <ListItem button onClick={() => handleSectionChange("chat")}>
               <ListItemIcon sx={{ color: "#F3C111" }}>
                 <Chat />
               </ListItemIcon>
               <ListItemText primary="Chat" />
             </ListItem>
-            <ListItem button onClick={() => setSelectedSection("community")}>
+            <ListItem button onClick={() => handleSectionChange("community")}>
               <ListItemIcon sx={{ color: "#F3C111" }}>
                 <Group />
               </ListItemIcon>
