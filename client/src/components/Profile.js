@@ -92,13 +92,22 @@ const Profile = ({ userData, onUpdateProfile }) => {
       setSnackbar({ open: true, message: "Mentor profile saved successfully!" })
       onUpdateProfile({ ...userData, mentor: res.data._id })
     } catch (err) {
+      // Log the error message to the console with the prefix
       console.error(
-        "Error saving mentor profile:",
+        "Error saving mentor profile: ",
         err.response ? err.response.data : err.message
       )
+
+      // Set the snackbar message to display the error to the user
+      const errorMessage =
+        err.response && err.response.data
+          ? err.response.data.message ||
+            "Error saving mentor profile. Please try again."
+          : "Error saving mentor profile. Please try again."
+
       setSnackbar({
         open: true,
-        message: "Error saving mentor profile. Please try again.",
+        message: errorMessage,
       })
     }
   }
@@ -156,7 +165,7 @@ const Profile = ({ userData, onUpdateProfile }) => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Bio"
+                label="Bio*"
                 name="bio"
                 value={mentorData.bio}
                 onChange={handleMentorDataChange}
@@ -167,7 +176,7 @@ const Profile = ({ userData, onUpdateProfile }) => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Expertise (comma-separated)"
+                label="Expertise* (comma-separated)"
                 name="expertise"
                 value={mentorData.expertise}
                 onChange={handleMentorDataChange}
@@ -176,7 +185,7 @@ const Profile = ({ userData, onUpdateProfile }) => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Years of Experience"
+                label="Years of Experience*"
                 name="experience"
                 type="number"
                 value={mentorData.experience}
