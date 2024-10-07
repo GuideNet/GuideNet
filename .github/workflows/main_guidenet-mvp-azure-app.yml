@@ -32,6 +32,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      id-token: write # Add this line to grant permission for ID token
     steps:
       - uses: actions/checkout@v4
       - name: Download build artifacts
