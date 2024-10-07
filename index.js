@@ -144,11 +144,6 @@ if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"))
   })
-} else {
-  // In development, keep the API route
-  app.get("/", (req, res) => {
-    res.send("Welcome to GuideNet API")
-  })
 }
 
 // Start the server
