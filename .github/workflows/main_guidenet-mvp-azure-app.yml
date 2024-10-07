@@ -20,8 +20,9 @@ jobs:
           npm install
           npm run build --if-present
           npm run test --if-present
-      - name: List build directory contents
-        run: ls -la ./client/build
+      - name: List build directory contents (Windows)
+        if: runner.os == 'Windows'
+        run: dir ./client/build
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
