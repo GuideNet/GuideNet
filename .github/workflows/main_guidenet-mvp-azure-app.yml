@@ -43,6 +43,11 @@ jobs:
           path: ./client/build
       - name: List downloaded build directory contents
         run: ls -la ./client/build
+      - name: Check Secrets
+        run: |
+          echo "Client ID: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}"
+          echo "Tenant ID: ${{ secrets.AZUREAPPSERVICE_TENANTID }}"
+          echo "Subscription ID: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}"
       - name: Login to Azure
         uses: azure/login@v2
         with:
