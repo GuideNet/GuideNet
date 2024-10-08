@@ -88,7 +88,7 @@ const Profile = ({ userData, onUpdateProfile }) => {
 
   const handleSaveMentorData = async () => {
     try {
-      const res = await api.post("/mentors", mentorData)
+      const res = await api.post("/api/mentors", mentorData)
       setSnackbar({ open: true, message: "Mentor profile saved successfully!" })
       onUpdateProfile({ ...userData, mentor: res.data._id })
     } catch (err) {

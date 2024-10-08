@@ -55,15 +55,12 @@ const Dashboard = () => {
   useEffect(() => {
     if (location.state) {
       const { selectedSection: newSection, chatUser } = location.state
-      console.log("Dashboard - location state:", location.state)
       if (newSection) {
         setSelectedSection(newSection)
         localStorage.setItem("selectedSection", newSection) // Save to localStorage
-        console.log("Dashboard - new selected section:", newSection)
       }
       if (chatUser) {
         setSelectedChatUser(chatUser)
-        console.log("Dashboard - new selected chat user:", chatUser)
       }
     }
   }, [location])
@@ -137,7 +134,7 @@ const Dashboard = () => {
 
   const handleAddPost = async (newPost) => {
     try {
-      const res = await api.post("/posts", newPost)
+      const res = await api.post("/api/posts", newPost)
 
       const fullNewPost = {
         ...res.data,
@@ -168,7 +165,7 @@ const Dashboard = () => {
 
   const handleCommentPost = async (postId, commentText) => {
     try {
-      const res = await api.post(`/posts/comment/${postId}`, {
+      const res = await api.post(`/api/posts/comment/${postId}`, {
         text: commentText,
       })
 
