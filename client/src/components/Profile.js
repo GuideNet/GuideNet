@@ -47,7 +47,7 @@ const Profile = ({ userData, onUpdateProfile }) => {
 
   const fetchMentorData = async (mentorId) => {
     try {
-      const res = await api.get(`/mentors/${mentorId}`)
+      const res = await api.get(`/api/mentors/${mentorId}`)
       setMentorData(res.data)
     } catch (err) {
       console.error("Error fetching mentor data:", err)

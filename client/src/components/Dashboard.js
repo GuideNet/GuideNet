@@ -125,7 +125,7 @@ const Dashboard = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await api.get("/posts")
+      const res = await api.get("/api/posts")
       setCommunityPosts(res.data)
     } catch (err) {
       console.error("Error fetching posts:", err)
