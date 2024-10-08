@@ -184,11 +184,13 @@ const Dashboard = () => {
     }
   }
 
-  const filteredPosts = communityPosts.filter(
-    (post) =>
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredPosts = Array.isArray(communityPosts)
+    ? communityPosts.filter(
+        (post) =>
+          post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          post.content?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : []
 
   const renderContent = () => {
     switch (selectedSection) {
