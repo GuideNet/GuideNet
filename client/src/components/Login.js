@@ -20,7 +20,7 @@ const Login = () => {
   const onSubmit = async (e) => {
     e.preventDefault()
     try {
-      const res = await api.post("/auth/login", formData) // Updated
+      const res = await api.post("/api/auth/login", formData) // Corrected
       console.log(res.data) // Token received
       localStorage.setItem("token", res.data.token)
       setSuccess("Login successful! Redirecting to dashboard...")
