@@ -174,23 +174,29 @@ const Chats = ({ selectedUser, userData }) => {
               </IconButton>
             </Box>
             <Box height="60vh" overflow="auto" mb={2}>
-              {selectedChat.messages.map((msg) => (
-                <Box key={msg._id} display="flex" alignItems="center" mb={1}>
-                  <Avatar
-                    src={`/api/users/avatar/${msg.sender._id}`}
-                    alt={msg.senderUsername}
-                    sx={{ width: 30, height: 30, mr: 1 }}
-                  />
-                  <Box>
-                    <Typography>
-                      {msg.senderUsername}: {msg.content}
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      {new Date(msg.timestamp).toLocaleString()}
-                    </Typography>
+              {selectedChat.messages.map((msg) => {
+                const avatarUrl = msg.sender._id
+                  ? `/api/users/avatar/${msg.sender._id}`
+                  : `/api/users/avatar/${msg.sender}`
+
+                return (
+                  <Box key={msg._id} display="flex" alignItems="center" mb={1}>
+                    <Avatar
+                      src={avatarUrl}
+                      alt={msg.senderUsername}
+                      sx={{ width: 30, height: 30, mr: 1 }}
+                    />
+                    <Box>
+                      <Typography>
+                        {msg.senderUsername}: {msg.content}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        {new Date(msg.timestamp).toLocaleString()}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              ))}
+                )
+              })}
             </Box>
             <Box display="flex">
               <TextField
