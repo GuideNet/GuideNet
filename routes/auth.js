@@ -4,6 +4,10 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const User = require("../models/User")
 const sendEmail = require("../client/src/utils/sendEmail")
+const crypto = require("crypto")
+const nodemailer = require("nodemailer")
+const passport = require("passport")
+const GoogleStrategy = require("passport-google-oauth20").Strategy
 
 // User Registration
 router.post("/register", async (req, res) => {
@@ -101,5 +105,104 @@ router.post("/login", async (req, res) => {
     res.status(500).send("Server Error")
   }
 })
+
+// Route to request a password reset
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body
+  try {
+    const user = await User.findOne({ email })
+    if (!user) return res.status(404).json({ msg: "User not found" })
+
+    const token = crypto.randomBytes(20).toString("hex")
+    user.resetPasswordToken = token
+    user.resetPasswordExpires = Date.now() + 3600000 // 1 hour
+    await user.save()
+
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    })
+
+    const mailOptions = {
+      to: user.email,
+      from: process.env.EMAIL,
+      subject: "Password Reset",
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+             Please click on the following link, or paste this into your browser to complete the process:\n\n
+             http://${req.headers.host}/reset-password/${token}\n\n
+             If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    }
+
+    transporter.sendMail(mailOptions, (err) => {
+      if (err) return res.status(500).json({ msg: "Error sending email" })
+      res.json({ msg: "Email sent" })
+    })
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" })
+  }
+})
+
+// Route to reset the password
+router.post("/reset-password/:token", async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() },
+    })
+
+    if (!user)
+      return res.status(400).json({ msg: "Token is invalid or has expired" })
+
+    user.password = req.body.password
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpires = undefined
+    await user.save()
+
+    res.json({ msg: "Password has been reset" })
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" })
+  }
+})
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "https://guidenet.co/auth/google/callback", // Update this line
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        let user = await User.findOne({ googleId: profile.id })
+        if (!user) {
+          user = await new User({
+            googleId: profile.id,
+            username: profile.displayName,
+            email: profile.emails[0].value,
+          }).save()
+        }
+        done(null, user)
+      } catch (err) {
+        done(err, null)
+      }
+    }
+  )
+)
+
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+)
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res) => {
+    res.redirect("/dashboard")
+  }
+)
 
 module.exports = router

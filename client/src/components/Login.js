@@ -20,7 +20,7 @@ const Login = () => {
   const onSubmit = async (e) => {
     e.preventDefault()
     try {
-      const res = await api.post("/api/auth/login", formData) // Corrected
+      const res = await api.post("/api/auth/login", formData)
       console.log(res.data) // Token received
       localStorage.setItem("token", res.data.token)
       setSuccess("Login successful! Redirecting to dashboard...")
@@ -69,6 +69,14 @@ const Login = () => {
           <button type="submit" className="login-button">
             Login
           </button>
+          <Link to="/forgot-password">
+            <button type="button" className="home-button">
+              Forgot Password
+            </button>
+          </Link>
+          <a href="/auth/google" className="google-button">
+            Login with Google
+          </a>
           <Link to="/">
             <button type="button" className="home-button">
               Back to Home
