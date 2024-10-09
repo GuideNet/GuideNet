@@ -152,7 +152,7 @@ const Dashboard = () => {
 
   const handleLikePost = async (postId) => {
     try {
-      const res = await api.put(`/posts/like/${postId}`, {})
+      const res = await api.put(`/api/posts/like/${postId}`, {})
       setCommunityPosts((prevPosts) =>
         prevPosts.map((post) =>
           post._id === postId ? { ...post, likes: res.data } : post
