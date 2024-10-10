@@ -29,7 +29,7 @@
   padding: 10px;
   margin-bottom: 10px;
   box-sizing: border-box;
-  text-align: center; /* Center the text inside the input */
+  text-align: left; /* Align text to the left */
 }
 
 .login-buttons {
@@ -75,7 +75,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 100%; /* Ensure the same width as login button */
   padding: 10px;
   margin: 5px 0;
   background-color: #007bff;

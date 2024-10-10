@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import axios from "axios"
+import "./ForgotPassword.css"
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("")
@@ -11,23 +12,26 @@ const ForgotPassword = () => {
       const res = await axios.post("/api/auth/forgot-password", { email })
       setMessage(res.data.msg)
     } catch (err) {
-      setMessage(err.response.data.msg)
+      setMessage(err.response.data.msg || "Error sending email")
     }
   }
 
   return (
-    <div>
-      <h1>Forgot Password</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="forgot-password-container">
+      <h1 className="forgot-password-title">Forgot Password</h1>
+      <form className="forgot-password-form" onSubmit={handleSubmit}>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
+          className="forgot-password-input"
         />
-        <button type="submit">Submit</button>
+        <button type="submit" className="forgot-password-button">
+          Submit
+        </button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p className="message">{message}</p>}
     </div>
   )
 }

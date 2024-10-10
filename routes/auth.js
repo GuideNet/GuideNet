@@ -119,16 +119,21 @@ router.post("/forgot-password", async (req, res) => {
     await user.save()
 
     const transporter = nodemailer.createTransport({
-      service: "Gmail",
+      host: "smtp.office365.com",
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        ciphers: "SSLv3",
       },
     })
 
     const mailOptions = {
       to: user.email,
-      from: process.env.EMAIL,
+      from: process.env.EMAIL_USER,
       subject: "Password Reset",
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
              Please click on the following link, or paste this into your browser to complete the process:\n\n
@@ -176,21 +181,14 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Check if the user already exists in your database
         let user = await User.findOne({ googleId: profile.id })
-
         if (!user) {
-          // If not, create a new user with the Google profile information
           user = await new User({
             googleId: profile.id,
             username: profile.displayName,
             email: profile.emails[0].value,
-            // Initialize other fields as needed
-            isVerified: true, // Assuming Google-verified users are considered verified
           }).save()
         }
-
-        // Return the user
         done(null, user)
       } catch (err) {
         done(err, null)
