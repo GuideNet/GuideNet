@@ -40,7 +40,6 @@
 }
 
 .login-button,
-.google-button,
 .home-button {
   width: 100%;
   padding: 10px;
@@ -71,16 +70,21 @@
   color: red;
 }
 
-.google-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%; /* Ensure the same width as login button */
-  padding: 10px;
-  margin: 5px 0;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
+.or-google-login {
+  margin-top: 10px;
+  text-align: center;
   font-size: 16px;
+  color: #333;
+}
+
+.google-link {
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.google-link:hover {
+  color: #0056b3;
 }

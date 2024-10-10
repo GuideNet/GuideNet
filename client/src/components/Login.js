@@ -70,10 +70,15 @@ const Login = () => {
           <button type="submit" className="login-button">
             Login
           </button>
-          <a href="/auth/google" className="google-button">
-            <FcGoogle style={{ marginRight: "8px" }} />
-            Login with Google
-          </a>
+          <div className="or-google-login">
+            Or{" "}
+            <a href="/auth/google" className="google-link">
+              <FcGoogle
+                style={{ marginRight: "8px", verticalAlign: "middle" }}
+              />
+              Login with Google
+            </a>
+          </div>
         </div>
         <div className="additional-buttons">
           <Link to="/forgot-password">

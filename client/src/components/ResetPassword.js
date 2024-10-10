@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import axios from "axios"
 import { useParams } from "react-router-dom"
+import "./ResetPassword.css"
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("")
@@ -20,18 +21,21 @@ const ResetPassword = () => {
   }
 
   return (
-    <div>
-      <h1>Reset Password</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="reset-password-container">
+      <h1 className="reset-password-title">Reset Password</h1>
+      <form className="reset-password-form" onSubmit={handleSubmit}>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter new password"
+          className="reset-password-input"
         />
-        <button type="submit">Submit</button>
+        <button type="submit" className="reset-password-button">
+          Submit
+        </button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p className="message">{message}</p>}
     </div>
   )
 }
