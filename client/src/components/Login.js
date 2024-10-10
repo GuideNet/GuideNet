@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import { FcGoogle } from "react-icons/fc" // Import Google icon
 import "./Login.css" // Import the CSS file
 import api from "../utils/api" // Use the api instance
 
@@ -69,14 +70,17 @@ const Login = () => {
           <button type="submit" className="login-button">
             Login
           </button>
+          <a href="/auth/google" className="google-button">
+            <FcGoogle style={{ marginRight: "8px" }} />
+            Login with Google
+          </a>
+        </div>
+        <div className="additional-buttons">
           <Link to="/forgot-password">
             <button type="button" className="home-button">
               Forgot Password
             </button>
           </Link>
-          <a href="/auth/google" className="google-button">
-            Login with Google
-          </a>
           <Link to="/">
             <button type="button" className="home-button">
               Back to Home
