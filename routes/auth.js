@@ -111,12 +111,21 @@ router.post("/forgot-password", async (req, res) => {
   const { email } = req.body
   try {
     const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ msg: "User not found" })
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" })
+    }
 
     const token = crypto.randomBytes(20).toString("hex")
     user.resetPasswordToken = token
     user.resetPasswordExpires = Date.now() + 3600000 // 1 hour
-    await user.save()
+
+    try {
+      await user.save()
+      console.log("User token and expiry saved:", user)
+    } catch (saveErr) {
+      console.error("Error saving user:", saveErr)
+      return res.status(500).json({ msg: "Error saving token" })
+    }
 
     const transporter = nodemailer.createTransport({
       host: "smtp.office365.com",
@@ -142,10 +151,14 @@ router.post("/forgot-password", async (req, res) => {
     }
 
     transporter.sendMail(mailOptions, (err) => {
-      if (err) return res.status(500).json({ msg: "Error sending email" })
+      if (err) {
+        console.error("Error sending email:", err)
+        return res.status(500).json({ msg: "Error sending email" })
+      }
       res.json({ msg: "Email sent" })
     })
   } catch (err) {
+    console.error("Server error:", err)
     res.status(500).json({ msg: "Server error" })
   }
 })
