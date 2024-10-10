@@ -172,18 +172,25 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://guidenet.co/auth/google/callback", // Update this line
+      callbackURL: "https://guidenet.co/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        // Check if the user already exists in your database
         let user = await User.findOne({ googleId: profile.id })
+
         if (!user) {
+          // If not, create a new user with the Google profile information
           user = await new User({
             googleId: profile.id,
             username: profile.displayName,
             email: profile.emails[0].value,
+            // Initialize other fields as needed
+            isVerified: true, // Assuming Google-verified users are considered verified
           }).save()
         }
+
+        // Return the user
         done(null, user)
       } catch (err) {
         done(err, null)

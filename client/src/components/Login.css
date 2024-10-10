@@ -1,12 +1,17 @@
 .login-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f8f8f8; /* Match the background color with Register.css */
 }
 
 .login-title {
-  margin-bottom: 20px;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+  text-align: center;
 }
 
 .login-form {
@@ -24,6 +29,7 @@
   padding: 10px;
   margin-bottom: 10px;
   box-sizing: border-box;
+  text-align: center; /* Center the text inside the input */
 }
 
 .login-buttons {
@@ -39,25 +45,20 @@
   width: 100%;
   padding: 10px;
   margin: 5px 0;
-  background-color: blue;
+  background-color: #007bff;
   color: white;
   border: none;
   cursor: pointer;
   font-size: 16px;
 }
 
-.login-button {
-  background-color: #007bff;
-  color: white;
+.login-button:hover {
+  background-color: #0056b3;
 }
 
 .home-button {
   background-color: #6c757d;
   color: white;
-}
-
-.login-button:hover {
-  background-color: #0056b3;
 }
 
 .home-button:hover {

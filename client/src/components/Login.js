@@ -70,7 +70,7 @@ const Login = () => {
           <button type="submit" className="login-button">
             Login
           </button>
-          <a href="/auth/google" className="google-button">
+          <a href="/auth/google/callback" className="google-button">
             <FcGoogle style={{ marginRight: "8px" }} />
             Login with Google
           </a>

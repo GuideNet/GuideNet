@@ -4,7 +4,8 @@ const UserSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String }, // Make password optional
+    googleId: { type: String, unique: true }, // Add googleId field
     role: {
       type: String,
       enum: ["mentee", "mentor"],
