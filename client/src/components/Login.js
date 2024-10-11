@@ -72,7 +72,10 @@ const Login = () => {
           </button>
           <div className="or-google-login">
             Or{" "}
-            <a href="/auth/google" className="google-link">
+            <a
+              href="https://guidenet.co/api/auth/google"
+              className="google-link"
+            >
               <FcGoogle
                 style={{ marginRight: "8px", verticalAlign: "middle" }}
               />
