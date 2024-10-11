@@ -4,7 +4,6 @@ const cors = require("cors")
 const multer = require("multer")
 const path = require("path")
 require("dotenv").config()
-const passport = require("passport") // Import Passport
 
 const app = express()
 const http = require("http")
@@ -32,9 +31,6 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 app.use(express.json())
-
-// Initialize Passport
-app.use(passport.initialize())
 
 // Set up Multer with memory storage
 const storage = multer.memoryStorage()

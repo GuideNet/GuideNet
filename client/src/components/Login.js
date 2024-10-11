@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { FcGoogle } from "react-icons/fc" // Import Google icon
 import "./Login.css" // Import the CSS file
 import api from "../utils/api" // Use the api instance
+import { account } from "../utils/appwrite"
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -44,6 +45,20 @@ const Login = () => {
     }
   }
 
+  const handleGoogleLogin = async (e) => {
+    e.preventDefault()
+    try {
+      await account.createOAuth2Session(
+        "google",
+        "https://guidenet.co/Dashboard", // Success URL
+        "https://guidenet.co/login" // Failure URL
+      )
+    } catch (error) {
+      console.error("Google OAuth error:", error)
+      // Handle error (e.g., show an error message to the user)
+    }
+  }
+
   return (
     <div className="login-container">
       <h1 className="login-title">Login</h1>
@@ -72,19 +87,12 @@ const Login = () => {
           </button>
           <div className="or-google-login">
             Or{" "}
-            <a
-              href="https://guidenet.co/auth/google"
-              className="google-link"
-              onClick={(e) => {
-                e.preventDefault()
-                window.location.href = "https://guidenet.co/auth/google"
-              }}
-            >
+            <button className="google-link" onClick={handleGoogleLogin}>
               <FcGoogle
                 style={{ marginRight: "8px", verticalAlign: "middle" }}
               />
               Login with Google
-            </a>
+            </button>
           </div>
         </div>
         <div className="additional-buttons">

@@ -6,8 +6,13 @@ const User = require("../models/User")
 const sendEmail = require("../client/src/utils/sendEmail")
 const crypto = require("crypto")
 const nodemailer = require("nodemailer")
-const passport = require("passport")
-const GoogleStrategy = require("passport-google-oauth20").Strategy
+const { Client, Account } = require("appwrite")
+
+const client = new Client()
+  .setEndpoint(process.env.APPWRITE_ENDPOINT)
+  .setProject(process.env.APPWRITE_PROJECT_ID)
+
+const account = new Account(client)
 
 // User Registration
 router.post("/register", async (req, res) => {
@@ -188,63 +193,35 @@ router.post("/reset-password/:token", async (req, res) => {
   }
 })
 
-// Passport Google Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://guidenet.co/auth/google/callback",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        let user = await User.findOne({ googleId: profile.id })
-        if (!user) {
-          user = await new User({
-            googleId: profile.id,
-            username: profile.displayName,
-            email: profile.emails[0].value,
-            isVerified: true, // Automatically verify Google users
-          }).save()
-        }
-        done(null, user)
-      } catch (err) {
-        console.error("Error in Google Strategy:", err)
-        done(err, null)
-      }
+// OAuth2 callback route
+router.get("/oauth2/callback", async (req, res) => {
+  try {
+    const session = await account.getSession(req.query.sessionId)
+    const { email, name, googleId } = session.user
+
+    // Check if user already exists
+    let user = await User.findOne({ googleId })
+    if (!user) {
+      // Create a new user
+      user = new User({
+        username: name,
+        email,
+        googleId,
+        isVerified: true, // Assuming OAuth2 users are verified
+      })
+      await user.save()
     }
-  )
-)
 
-// Google Authentication Routes
+    // Generate JWT
+    const payload = { user: { id: user.id } }
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 })
 
-// Initiates the Google OAuth flow
-router.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-)
-
-// Handles the Google OAuth callback
-router.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-    // Successful authentication, generate JWT
-    const payload = { user: { id: req.user.id } }
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 3600 }, // Token expires in 1 hour
-      (err, token) => {
-        if (err) {
-          console.error("JWT Sign Error:", err)
-          return res.redirect("/login")
-        }
-        // Redirect to frontend with token as a query parameter
-        res.redirect(`/dashboard?token=${token}`)
-      }
-    )
+    // Redirect to the client with the token
+    res.redirect(`https://guidenet.co/Dashboard?token=${token}`)
+  } catch (err) {
+    console.error("OAuth2 callback error:", err)
+    res.status(500).send("Server Error")
   }
-)
+})
 
 module.exports = router
