@@ -4,6 +4,7 @@ const cors = require("cors")
 const multer = require("multer")
 const path = require("path")
 require("dotenv").config()
+const passport = require("passport") // Import Passport
 
 const app = express()
 const http = require("http")
@@ -31,6 +32,9 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 app.use(express.json())
+
+// Initialize Passport
+app.use(passport.initialize())
 
 // Set up Multer with memory storage
 const storage = multer.memoryStorage()
@@ -144,7 +148,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // Start the server
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 5000
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })

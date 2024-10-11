@@ -188,6 +188,7 @@ router.post("/reset-password/:token", async (req, res) => {
   }
 })
 
+// Passport Google Strategy
 passport.use(
   new GoogleStrategy(
     {
@@ -203,6 +204,7 @@ passport.use(
             googleId: profile.id,
             username: profile.displayName,
             email: profile.emails[0].value,
+            isVerified: true, // Automatically verify Google users
           }).save()
         }
         done(null, user)
@@ -214,25 +216,34 @@ passport.use(
   )
 )
 
-router.get("/auth/google", (req, res, next) => {
-  passport.authenticate("google", { scope: ["profile", "email"] })(
-    req,
-    res,
-    next
-  )
-})
+// Google Authentication Routes
 
+// Initiates the Google OAuth flow
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+)
+
+// Handles the Google OAuth callback
 router.get(
   "/auth/google/callback",
-  (req, res, next) => {
-    passport.authenticate("google", { failureRedirect: "/login" })(
-      req,
-      res,
-      next
-    )
-  },
+  passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    res.redirect("/dashboard")
+    // Successful authentication, generate JWT
+    const payload = { user: { id: req.user.id } }
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: 3600 }, // Token expires in 1 hour
+      (err, token) => {
+        if (err) {
+          console.error("JWT Sign Error:", err)
+          return res.redirect("/login")
+        }
+        // Redirect to frontend with token as a query parameter
+        res.redirect(`/dashboard?token=${token}`)
+      }
+    )
   }
 )
 

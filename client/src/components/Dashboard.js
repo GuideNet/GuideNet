@@ -215,6 +215,25 @@ const Dashboard = () => {
     }
   }
 
+  useEffect(() => {
+    const query = new URLSearchParams(location.search)
+    const token = query.get("token")
+    if (token) {
+      // Store the token
+      localStorage.setItem("token", token)
+
+      // Optionally decode the token to get user info
+      const decoded = jwtDecode(token)
+      console.log("Decoded Token:", decoded)
+
+      // Redirect to a protected dashboard view or update state
+      navigate("/protected-dashboard", { replace: true })
+    } else {
+      // If no token, redirect to login
+      navigate("/login", { replace: true })
+    }
+  }, [location, navigate])
+
   if (!userData) {
     return (
       <Box textAlign="center" mt="50px">
