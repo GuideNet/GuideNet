@@ -75,6 +75,10 @@ const Login = () => {
             <a
               href="https://guidenet.co/api/auth/google"
               className="google-link"
+              onClick={(e) => {
+                e.preventDefault()
+                window.location.href = "https://guidenet.co/api/auth/google"
+              }}
             >
               <FcGoogle
                 style={{ marginRight: "8px", verticalAlign: "middle" }}

@@ -207,20 +207,30 @@ passport.use(
         }
         done(null, user)
       } catch (err) {
+        console.error("Error in Google Strategy:", err)
         done(err, null)
       }
     }
   )
 )
 
-router.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-)
+router.get("/auth/google", (req, res, next) => {
+  passport.authenticate("google", { scope: ["profile", "email"] })(
+    req,
+    res,
+    next
+  )
+})
 
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res, next) => {
+    passport.authenticate("google", { failureRedirect: "/login" })(
+      req,
+      res,
+      next
+    )
+  },
   (req, res) => {
     res.redirect("/dashboard")
   }
