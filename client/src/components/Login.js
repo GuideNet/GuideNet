@@ -73,11 +73,11 @@ const Login = () => {
           <div className="or-google-login">
             Or{" "}
             <a
-              href="https://guidenet.co/api/auth/google"
+              href="https://guidenet.co/auth/google"
               className="google-link"
               onClick={(e) => {
                 e.preventDefault()
-                window.location.href = "https://guidenet.co/api/auth/google"
+                window.location.href = "https://guidenet.co/auth/google"
               }}
             >
               <FcGoogle
