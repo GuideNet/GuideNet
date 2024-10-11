@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { FcGoogle } from "react-icons/fc" // Import Google icon
 import "./Login.css" // Import the CSS file
 import api from "../utils/api" // Use the api instance
+import { account } from "../utils/appwrite"
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -72,19 +73,20 @@ const Login = () => {
           </button>
           <div className="or-google-login">
             Or{" "}
-            <a
-              href="https://guidenet.co/auth/google"
-              className="google-link"
-              onClick={(e) => {
-                e.preventDefault()
-                window.location.href = "https://guidenet.co/auth/google"
-              }}
+            <button
+              onClick={() =>
+                account.createOAuth2Session(
+                  "google",
+                  "https://guidenet.co",
+                  "https://guidenet.co/login"
+                )
+              }
             >
               <FcGoogle
                 style={{ marginRight: "8px", verticalAlign: "middle" }}
               />
               Login with Google
-            </a>
+            </button>
           </div>
         </div>
         <div className="additional-buttons">
