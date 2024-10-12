@@ -50,7 +50,7 @@ const Login = () => {
     try {
       await account.createOAuth2Session(
         "google",
-        "https://guidenet.co/dashboard", // Success URL
+        "https://guidenet.co/api/auth/oauth2/callback", // Success URL
         "https://guidenet.co/login" // Failure URL
       )
     } catch (error) {
