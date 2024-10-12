@@ -217,7 +217,7 @@ router.get("/oauth2/callback", async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 })
 
     // Redirect to the client with the token
-    res.redirect(`https://guidenet.co/Dashboard?token=${token}`)
+    res.redirect(`https://guidenet.co/dashboard?token=${token}`)
   } catch (err) {
     console.error("OAuth2 callback error:", err)
     res.status(500).send("Server Error")

@@ -65,6 +65,15 @@ const Dashboard = () => {
     }
   }, [location])
 
+  const token = new URLSearchParams(window.location.search).get("token")
+  if (token) {
+    localStorage.setItem("token", token)
+    // Redirect to the dashboard or set the user state
+  } else {
+    // Handle the case where the token is not present
+    navigate("/login")
+  }
+
   const handleSectionChange = (section) => {
     setSelectedSection(section)
     localStorage.setItem("selectedSection", section) // Save to localStorage
