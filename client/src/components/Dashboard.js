@@ -101,6 +101,7 @@ const Dashboard = () => {
 
   const handleUpdateProfile = async (updates) => {
     console.log("Updating profile with:", updates)
+    const token = localStorage.getItem("token")
     try {
       const res = await api.put("/api/users/profile", updates, {
         headers: {
@@ -108,6 +109,7 @@ const Dashboard = () => {
             updates instanceof FormData
               ? "multipart/form-data"
               : "application/json",
+          "x-auth-token": token,
         },
       })
       console.log("Profile update response:", res.data)
