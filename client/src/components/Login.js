@@ -51,7 +51,7 @@ const Login = () => {
           <input
             type="email"
             id="email"
-            placeholder="Email Address"
+            placeholder="Email"
             name="email"
             value={email}
             onChange={onChange}
