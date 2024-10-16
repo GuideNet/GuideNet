@@ -30,11 +30,14 @@ const corsOptions = {
   credentials: true,
 }
 app.use(cors(corsOptions))
-app.use(express.json())
+app.use(express.json({ limit: "10mb" })) // Adjust the limit as needed
+app.use(express.urlencoded({ limit: "10mb", extended: true })) // Adjust the limit as needed
 
 // Set up Multer with memory storage
-const storage = multer.memoryStorage()
-const upload = multer({ storage: storage })
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB limit
+})
 
 // Routes
 const authRoutes = require("./routes/auth")
