@@ -49,8 +49,10 @@ const Dashboard = () => {
       const decoded = jwtDecode(token)
       const userId = decoded.user.id
       fetchUserData(userId, token)
+    } else {
+      navigate("/login")
     }
-  }, [])
+  }, [navigate])
 
   useEffect(() => {
     if (location.state) {
@@ -64,15 +66,6 @@ const Dashboard = () => {
       }
     }
   }, [location])
-
-  const token = new URLSearchParams(window.location.search).get("token")
-  if (token) {
-    localStorage.setItem("token", token)
-    // Redirect to the dashboard or set the user state
-  } else {
-    // Handle the case where the token is not present
-    navigate("/login")
-  }
 
   const handleSectionChange = (section) => {
     setSelectedSection(section)
@@ -241,7 +234,7 @@ const Dashboard = () => {
       // If no token, redirect to login
       navigate("/login", { replace: true })
     }
-  }, [location, navigate])
+  }, [location, navigate]) // Added 'navigate' to the dependency array
 
   if (!userData) {
     return (
