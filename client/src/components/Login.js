@@ -27,9 +27,7 @@ const Login = () => {
       localStorage.setItem("token", res.data.token)
       setSuccess("Login successful! Redirecting to dashboard...")
       setError("")
-      setTimeout(() => {
-        navigate("/dashboard")
-      }, 2000)
+      navigate("/dashboard")
     } catch (err) {
       console.error(err.response.data)
       if (
@@ -61,45 +59,43 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h1 className="login-title">Login</h1>
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
-      <form className="login-form" onSubmit={onSubmit}>
-        <input
-          type="email"
-          name="email"
-          value={email}
-          onChange={onChange}
-          placeholder="Email"
-          className="login-input"
-        />
-        <input
-          type="password"
-          name="password"
-          value={password}
-          onChange={onChange}
-          placeholder="Password"
-          className="login-input"
-        />
-        <div className="login-buttons">
-          <button type="submit" className="login-button">
-            Login
-          </button>
-          <div className="or-google-login">
-            Or{" "}
-            <button className="google-link" onClick={handleGoogleLogin}>
-              <FcGoogle
-                style={{ marginRight: "8px", verticalAlign: "middle" }}
-              />
-              Login with Google
-            </button>
-          </div>
+      <form onSubmit={onSubmit} className="login-form">
+        <h2>Login</h2>
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        <div className="form-group">
+          <label htmlFor="email">Email Address</label>
+          <input
+            type="email"
+            placeholder="Email Address"
+            name="email"
+            value={email}
+            onChange={onChange}
+            required
+          />
         </div>
-        <div className="additional-buttons">
-          <Link to="/forgot-password">
-            <button type="button" className="home-button">
-              Forgot Password
-            </button>
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            placeholder="Password"
+            name="password"
+            value={password}
+            onChange={onChange}
+            minLength="6"
+            required
+          />
+        </div>
+        <input type="submit" className="btn btn-primary" value="Login" />
+        <button onClick={handleGoogleLogin} className="google-btn">
+          <FcGoogle /> Login with Google
+        </button>
+        <div className="links-container">
+          <Link to="/register" className="register-link">
+            Don't have an account? Sign Up
+          </Link>
+          <Link to="/forgot-password" className="forgot-password-link">
+            Forgot Password?
           </Link>
           <Link to="/">
             <button type="button" className="home-button">
