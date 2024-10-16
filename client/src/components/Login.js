@@ -42,13 +42,12 @@ const Login = () => {
   }
 
   return (
-    <div className="login-container">
-      <h2 className="login-title">Login</h2>
-      <form onSubmit={onSubmit} className="login-form">
+    <div className="auth-container">
+      <h2 className="auth-title">Login</h2>
+      <form onSubmit={onSubmit} className="auth-form">
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
         <div className="form-group">
-          <label htmlFor="email">Email Address</label>
           <input
             type="email"
             id="email"
@@ -57,11 +56,10 @@ const Login = () => {
             value={email}
             onChange={onChange}
             required
-            className="login-input"
+            className="auth-input"
           />
         </div>
         <div className="form-group">
-          <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
@@ -71,11 +69,11 @@ const Login = () => {
             onChange={onChange}
             minLength="6"
             required
-            className="login-input"
+            className="auth-input"
           />
         </div>
-        <div className="login-buttons">
-          <button type="submit" className="login-button">
+        <div className="auth-buttons">
+          <button type="submit" className="submit-button">
             Login
           </button>
           <Link to="/">
@@ -85,10 +83,10 @@ const Login = () => {
           </Link>
         </div>
         <div className="links-container">
-          <Link to="/register" className="register-link">
+          <Link to="/register" className="auth-link">
             Don't have an account? Sign Up
           </Link>
-          <Link to="/forgot-password" className="forgot-password-link">
+          <Link to="/forgot-password" className="auth-link">
             Forgot Password?
           </Link>
         </div>

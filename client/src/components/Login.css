@@ -1,4 +1,5 @@
-.login-container {
+/* General container for login and register forms */
+.auth-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -7,13 +8,13 @@
   background-color: #f8f8f8;
 }
 
-.login-title {
+.auth-title {
   font-size: 2rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   color: #333;
 }
 
-.login-form {
+.auth-form {
   display: flex;
   flex-direction: column;
   width: 300px;
@@ -24,38 +25,33 @@
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.login-input {
+.auth-input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.8rem;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
   box-sizing: border-box;
 }
 
-.login-buttons {
+.auth-buttons {
   display: flex;
   justify-content: space-between;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
-.login-button,
+.submit-button,
 .home-button {
-  padding: 0.5rem 1rem;
+  padding: 0.7rem 1.2rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-.login-button {
-  background-color: #007bff;
+.submit-button {
+  background-color: #28a745;
   color: white;
 }
 
@@ -64,8 +60,8 @@
   color: white;
 }
 
-.login-button:hover {
-  background-color: #0056b3;
+.submit-button:hover {
+  background-color: #218838;
 }
 
 .home-button:hover {
@@ -93,14 +89,12 @@
   margin-top: 1rem;
 }
 
-.register-link,
-.forgot-password-link {
+.auth-link {
   color: #007bff;
   text-decoration: none;
   margin: 5px 0;
 }
 
-.register-link:hover,
-.forgot-password-link:hover {
+.auth-link:hover {
   text-decoration: underline;
 }
