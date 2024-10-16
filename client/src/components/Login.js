@@ -1,9 +1,7 @@
 import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { FcGoogle } from "react-icons/fc" // Import Google icon
-import "./Login.css" // Import the CSS file
-import api from "../utils/api" // Use the api instance
-import { account } from "../utils/appwrite"
+import "./Login.css"
+import api from "../utils/api"
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -23,7 +21,7 @@ const Login = () => {
     e.preventDefault()
     try {
       const res = await api.post("/api/auth/login", formData)
-      console.log(res.data) // Token received
+      console.log(res.data)
       localStorage.setItem("token", res.data.token)
       setSuccess("Login successful! Redirecting to dashboard...")
       setError("")
@@ -43,28 +41,13 @@ const Login = () => {
     }
   }
 
-  const handleGoogleLogin = async (e) => {
-    e.preventDefault()
-    try {
-      await account.createOAuth2Session(
-        "google",
-        "https://guidenet.co/api/auth/oauth2/callback", // Success URL
-        "https://guidenet.co/login" // Failure URL
-      )
-    } catch (error) {
-      console.error("Google OAuth error:", error)
-      // Handle error (e.g., show an error message to the user)
-    }
-  }
-
   return (
     <div className="login-container">
       <form onSubmit={onSubmit} className="login-form">
-        <h2>Login</h2>
+        <h2 className="login-title">Login</h2>
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
         <div className="form-group">
-          <label htmlFor="email">Email Address</label>
           <input
             type="email"
             placeholder="Email Address"
@@ -72,10 +55,10 @@ const Login = () => {
             value={email}
             onChange={onChange}
             required
+            className="login-input"
           />
         </div>
         <div className="form-group">
-          <label htmlFor="password">Password</label>
           <input
             type="password"
             placeholder="Password"
@@ -84,12 +67,14 @@ const Login = () => {
             onChange={onChange}
             minLength="6"
             required
+            className="login-input"
           />
         </div>
-        <input type="submit" className="btn btn-primary" value="Login" />
-        <button onClick={handleGoogleLogin} className="google-btn">
-          <FcGoogle /> Login with Google
-        </button>
+        <div className="login-buttons">
+          <button type="submit" className="login-button">
+            Login
+          </button>
+        </div>
         <div className="links-container">
           <Link to="/register" className="register-link">
             Don't have an account? Sign Up
@@ -97,12 +82,12 @@ const Login = () => {
           <Link to="/forgot-password" className="forgot-password-link">
             Forgot Password?
           </Link>
-          <Link to="/">
-            <button type="button" className="home-button">
-              Back to Home
-            </button>
-          </Link>
         </div>
+        <Link to="/">
+          <button type="button" className="home-button">
+            Back to Home
+          </button>
+        </Link>
       </form>
     </div>
   )
