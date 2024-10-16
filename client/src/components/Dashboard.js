@@ -108,7 +108,6 @@ const Dashboard = () => {
             updates instanceof FormData
               ? "multipart/form-data"
               : "application/json",
-          "x-auth-token": localStorage.getItem("token"),
         },
       })
       console.log("Profile update response:", res.data)

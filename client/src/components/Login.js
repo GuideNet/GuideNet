@@ -21,8 +21,13 @@ const Login = () => {
     e.preventDefault()
     try {
       const res = await api.post("/api/auth/login", formData)
-      console.log(res.data)
-      localStorage.setItem("token", res.data.token)
+      console.log("Login response:", res.data)
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token)
+        console.log("Token set in localStorage:", res.data.token)
+      } else {
+        console.error("No token received from server")
+      }
       setSuccess("Login successful! Redirecting to dashboard...")
       setError("")
       navigate("/dashboard")
