@@ -34,7 +34,7 @@ import api from "../utils/api"
 const Dashboard = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [selectedSection, setSelectedSection] = useState(
-    localStorage.getItem("selectedSection") || "community"
+    localStorage.getItem("selectedSection") || "community" // Initialize from localStorage
   )
   const [selectedChatUser, setSelectedChatUser] = useState(null)
   const [userData, setUserData] = useState(null)
@@ -102,7 +102,7 @@ const Dashboard = () => {
   const handleUpdateProfile = async (updates) => {
     console.log("Updating profile with:", updates)
     try {
-      const res = await axios.put("/api/users/profile", updates, {
+      const res = await api.put("/api/users/profile", updates, {
         headers: {
           "Content-Type":
             updates instanceof FormData
