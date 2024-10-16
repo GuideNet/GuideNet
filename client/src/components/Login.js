@@ -43,13 +43,15 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      <h2 className="login-title">Login</h2>
       <form onSubmit={onSubmit} className="login-form">
-        <h2 className="login-title">Login</h2>
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
         <div className="form-group">
+          <label htmlFor="email">Email Address</label>
           <input
             type="email"
+            id="email"
             placeholder="Email Address"
             name="email"
             value={email}
@@ -59,8 +61,10 @@ const Login = () => {
           />
         </div>
         <div className="form-group">
+          <label htmlFor="password">Password</label>
           <input
             type="password"
+            id="password"
             placeholder="Password"
             name="password"
             value={password}
@@ -74,6 +78,11 @@ const Login = () => {
           <button type="submit" className="login-button">
             Login
           </button>
+          <Link to="/">
+            <button type="button" className="home-button">
+              Back to Home
+            </button>
+          </Link>
         </div>
         <div className="links-container">
           <Link to="/register" className="register-link">
@@ -83,11 +92,6 @@ const Login = () => {
             Forgot Password?
           </Link>
         </div>
-        <Link to="/">
-          <button type="button" className="home-button">
-            Back to Home
-          </button>
-        </Link>
       </form>
     </div>
   )
