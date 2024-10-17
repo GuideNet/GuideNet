@@ -20,6 +20,8 @@ import {
   Send,
   Add as AddIcon,
   Search,
+  ExpandMore,
+  ExpandLess,
 } from "@mui/icons-material"
 import AuthorDetailsPopup from "./AuthorDetailsPopup"
 import api from "../utils/api"
@@ -39,6 +41,8 @@ const Community = ({
   const [activeCommentPost, setActiveCommentPost] = useState(null)
   const [selectedAuthor, setSelectedAuthor] = useState(null)
   const [authorPopupOpen, setAuthorPopupOpen] = useState(false)
+  const [expandedPosts, setExpandedPosts] = useState({})
+  const MAX_HEIGHT = 150 // Maximum height for collapsed posts in pixels
 
   useEffect(() => {}, [searchQuery, communityPosts])
 
@@ -102,6 +106,13 @@ const Community = ({
       setSelectedAuthor({ ...author, role: "mentee" })
       setAuthorPopupOpen(true)
     }
+  }
+
+  const togglePostExpansion = (postId) => {
+    setExpandedPosts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }))
   }
 
   return (
@@ -186,6 +197,9 @@ const Community = ({
 
       <List>
         {communityPosts.map((post) => {
+          const isExpanded = expandedPosts[post._id]
+          const isLongPost = post.content.length > 300 // Adjust this threshold as needed
+
           return (
             <Paper key={post._id} elevation={2} sx={{ mb: 2, p: 2 }}>
               <ListItem alignItems="flex-start">
@@ -204,7 +218,13 @@ const Community = ({
                     </Typography>
                   }
                   secondary={
-                    <React.Fragment>
+                    <Box
+                      sx={{
+                        maxHeight: isLongPost && !isExpanded ? MAX_HEIGHT : 'none',
+                        overflow: 'hidden',
+                        position: 'relative',
+                      }}
+                    >
                       <Typography
                         component="span"
                         variant="body2"
@@ -218,11 +238,34 @@ const Community = ({
                         {post.author.username}
                       </Typography>
                       {" — "}
-                      {post.content}
-                    </React.Fragment>
+                      <Typography component="span">
+                        {post.content}
+                      </Typography>
+                      {isLongPost && !isExpanded && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '50px',
+                            background: 'linear-gradient(transparent, white)',
+                          }}
+                        />
+                      )}
+                    </Box>
                   }
                 />
               </ListItem>
+              {isLongPost && (
+                <Button
+                  onClick={() => togglePostExpansion(post._id)}
+                  endIcon={isExpanded ? <ExpandLess /> : <ExpandMore />}
+                  sx={{ mt: 1 }}
+                >
+                  {isExpanded ? "Collapse" : "Read more"}
+                </Button>
+              )}
               <Box
                 display="flex"
                 justifyContent="space-between"
