@@ -33,9 +33,7 @@ import api from "../utils/api"
 
 const Dashboard = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [selectedSection, setSelectedSection] = useState(
-    localStorage.getItem("selectedSection") || "community" // Initialize from localStorage
-  )
+  const [selectedSection, setSelectedSection] = useState("community")
   const [selectedChatUser, setSelectedChatUser] = useState(null)
   const [userData, setUserData] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -49,6 +47,7 @@ const Dashboard = () => {
       const decoded = jwtDecode(token)
       const userId = decoded.user.id
       fetchUserData(userId, token)
+      setSelectedSection("community") // Reset to community on initial load
     } else {
       navigate("/login")
     }
@@ -69,7 +68,7 @@ const Dashboard = () => {
 
   const handleSectionChange = (section) => {
     setSelectedSection(section)
-    localStorage.setItem("selectedSection", section) // Save to localStorage
+    localStorage.setItem("selectedSection", section) // Still save for potential future use
   }
 
   const fetchUserData = async (userId, token) => {
@@ -91,6 +90,7 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem("selectedSection") // Remove stored section
     navigate("/")
   }
 
