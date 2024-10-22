@@ -3,7 +3,7 @@ import axios from "axios"
 const api = axios.create({
   baseURL:
     process.env.NODE_ENV === "production"
-      ? "https://guidenet.co/api"
+      ? "https://guidenet.co/"
       : "http://localhost:5000/",
   headers: {
     "Content-Type": "application/json",
