@@ -6,7 +6,6 @@ import {
   Button,
   Avatar,
   IconButton,
-  List,
   ListItem,
   ListItemAvatar,
   ListItemText,
@@ -17,7 +16,6 @@ import {
 import {
   ThumbUp,
   Comment,
-  Send,
   Add as AddIcon,
   Search,
   ExpandMore,
@@ -109,9 +107,9 @@ const Community = ({
   }
 
   const togglePostExpansion = (postId) => {
-    setExpandedPosts(prev => ({
+    setExpandedPosts((prev) => ({
       ...prev,
-      [postId]: !prev[postId]
+      [postId]: !prev[postId],
     }))
   }
 
@@ -202,7 +200,14 @@ const Community = ({
 
           return (
             <Grid item xs={12} sm={6} md={4} key={post._id}>
-              <Paper elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Paper
+                elevation={2}
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
                 <Box sx={{ p: 2, flexGrow: 1 }}>
                   <ListItem alignItems="flex-start" disableGutters>
                     <ListItemAvatar>
@@ -222,9 +227,10 @@ const Community = ({
                       secondary={
                         <Box
                           sx={{
-                            maxHeight: isLongPost && !isExpanded ? MAX_HEIGHT : 'none',
-                            overflow: 'hidden',
-                            position: 'relative',
+                            maxHeight:
+                              isLongPost && !isExpanded ? MAX_HEIGHT : "none",
+                            overflow: "hidden",
+                            position: "relative",
                           }}
                         >
                           <Typography
@@ -246,12 +252,13 @@ const Community = ({
                           {isLongPost && !isExpanded && (
                             <Box
                               sx={{
-                                position: 'absolute',
+                                position: "absolute",
                                 bottom: 0,
                                 left: 0,
-                                width: '100%',
-                                height: '50px',
-                                background: 'linear-gradient(transparent, white)',
+                                width: "100%",
+                                height: "50px",
+                                background:
+                                  "linear-gradient(transparent, white)",
                               }}
                             />
                           )}
@@ -271,7 +278,11 @@ const Community = ({
                       {isExpanded ? "Collapse" : "Read more"}
                     </Button>
                   )}
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
                     <Box>
                       <IconButton onClick={() => onLikePost(post._id)}>
                         <ThumbUp
@@ -287,7 +298,9 @@ const Community = ({
                       <Typography component="span">
                         {post.likes ? post.likes.length : 0} likes
                       </Typography>
-                      <IconButton onClick={() => setActiveCommentPost(post._id)}>
+                      <IconButton
+                        onClick={() => setActiveCommentPost(post._id)}
+                      >
                         <Comment />
                       </IconButton>
                       <Typography component="span">
