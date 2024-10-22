@@ -6,6 +6,7 @@ import {
   Button,
   Avatar,
   IconButton,
+  List,
   ListItem,
   ListItemAvatar,
   ListItemText,
@@ -16,13 +17,12 @@ import {
 import {
   ThumbUp,
   Comment,
+  Send,
   Add as AddIcon,
   Search,
-  ExpandMore,
-  ExpandLess,
 } from "@mui/icons-material"
 import AuthorDetailsPopup from "./AuthorDetailsPopup"
-import api from "../utils/api"
+import axios from "axios"
 import ReactQuill from "react-quill"
 import "react-quill/dist/quill.snow.css"
 
@@ -42,14 +42,14 @@ const Community = ({
   const [selectedAuthor, setSelectedAuthor] = useState(null)
   const [authorPopupOpen, setAuthorPopupOpen] = useState(false)
   const [expandedPosts, setExpandedPosts] = useState({})
-  const MAX_HEIGHT = 150 // Maximum height for collapsed posts in pixels
 
   useEffect(() => {}, [searchQuery, communityPosts])
 
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
 
-  const handleNewPostChange = (name, value) => {
+  const handleNewPostChange = (e) => {
+    const { name, value } = e.target
     setNewPost((prev) => ({ ...prev, [name]: value }))
   }
 
@@ -69,11 +69,17 @@ const Community = ({
     console.log("Author clicked:", author)
     try {
       let completeAuthorDetails
-      // No need to manually set headers as api intercepts and attaches the token
-      // First, try to fetch mentor details
+      const token = localStorage.getItem("token")
+      const config = {
+        headers: { "x-auth-token": token },
+      }
+
       try {
         console.log("Attempting to fetch mentor details")
-        const mentorResponse = await api.get(`/mentors/user/${author._id}`)
+        const mentorResponse = await axios.get(
+          `/api/mentors/user/${author._id}`,
+          config
+        )
         console.log("Mentor API response:", mentorResponse.data)
         completeAuthorDetails = {
           ...mentorResponse.data,
@@ -86,9 +92,8 @@ const Community = ({
           "Not a mentor or error fetching mentor details:",
           mentorError
         )
-        // If not a mentor, fetch user details
         console.log("Fetching user details")
-        const userResponse = await api.get(`/users/${author._id}`)
+        const userResponse = await axios.get(`/api/users/${author._id}`, config)
         console.log("User API response:", userResponse.data)
         completeAuthorDetails = {
           ...userResponse.data,
@@ -107,15 +112,12 @@ const Community = ({
     }
   }
 
-  const togglePostExpansion = (postId) => {
-    setExpandedPosts((prev) => ({
-      ...prev,
-      [postId]: !prev[postId],
-    }))
+  const handleExpandPost = (postId) => {
+    setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }))
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <>
       <Box sx={{ mb: 2 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs>
@@ -152,7 +154,7 @@ const Community = ({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 600,
+            width: 400,
             p: 4,
           }}
         >
@@ -165,12 +167,22 @@ const Community = ({
             placeholder="Title"
             name="title"
             value={newPost.title}
-            onChange={(e) => handleNewPostChange("title", e.target.value)}
+            onChange={handleNewPostChange}
             sx={{ mb: 2 }}
           />
           <ReactQuill
             value={newPost.content}
-            onChange={(value) => handleNewPostChange("content", value)}
+            onChange={(content) => setNewPost((prev) => ({ ...prev, content }))}
+            placeholder="Content"
+            modules={{
+              toolbar: [
+                [{ header: [1, 2, false] }],
+                ["bold", "italic", "underline", "strike", "blockquote"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["link", "image"],
+                ["clean"],
+              ],
+            }}
             style={{ height: "200px", marginBottom: "20px" }}
           />
           <Box mt={2} display="flex" justifyContent="flex-end">
@@ -188,138 +200,155 @@ const Community = ({
         </Paper>
       </Modal>
 
-      <Grid container spacing={2}>
+      <List>
         {communityPosts.map((post) => {
           const isExpanded = expandedPosts[post._id]
           const isLongPost = post.content.length > 300 // Adjust this threshold as needed
 
           return (
-            <Grid item xs={12} sm={6} md={4} key={post._id}>
-              <Paper
-                elevation={2}
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <Box sx={{ p: 2, flexGrow: 1 }}>
-                  <ListItem alignItems="flex-start" disableGutters>
-                    <ListItemAvatar>
-                      <Avatar
-                        src={`/api/users/avatar/${post.author._id}`}
-                        alt={post.author.username}
-                        onClick={() => handleAuthorClick(post.author)}
+            <Paper key={post._id} elevation={2} sx={{ mb: 2, p: 2 }}>
+              <ListItem alignItems="flex-start">
+                <ListItemAvatar>
+                  <Avatar
+                    src={`/api/users/avatar/${post.author._id}`}
+                    alt={post.author.username}
+                    onClick={() => handleAuthorClick(post.author)}
+                    sx={{ cursor: "pointer" }}
+                  />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Typography variant="h5" component="div" gutterBottom>
+                      {post.title}
+                    </Typography>
+                  }
+                  secondary={
+                    <React.Fragment>
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        color="text.primary"
                         sx={{ cursor: "pointer" }}
+                        onClick={() => {
+                          setSelectedAuthor(post.author)
+                          setAuthorPopupOpen(true)
+                        }}
+                      >
+                        {post.author.username}
+                      </Typography>
+                      {" — "}
+                      <Typography
+                        component="div"
+                        dangerouslySetInnerHTML={{
+                          __html: isExpanded
+                            ? post.content
+                            : post.content.slice(0, 300) + "...",
+                        }}
                       />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="h6" component="div" gutterBottom>
-                          {post.title}
-                        </Typography>
-                      }
-                      secondary={
-                        <Box
-                          sx={{
-                            maxHeight:
-                              isLongPost && !isExpanded ? MAX_HEIGHT : "none",
-                            overflow: "hidden",
-                            position: "relative",
-                          }}
-                        >
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="text.primary"
-                            sx={{ cursor: "pointer" }}
-                            onClick={() => {
-                              setSelectedAuthor(post.author)
-                              setAuthorPopupOpen(true)
-                            }}
-                          >
-                            {post.author.username}
-                          </Typography>
-                          {" — "}
-                          <Typography
-                            component="div"
-                            dangerouslySetInnerHTML={{ __html: post.content }}
-                          />
-                          {isLongPost && !isExpanded && (
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                bottom: 0,
-                                left: 0,
-                                width: "100%",
-                                height: "50px",
-                                background:
-                                  "linear-gradient(transparent, white)",
-                              }}
-                            />
-                          )}
-                        </Box>
+                      {isLongPost && (
+                        <Button onClick={() => handleExpandPost(post._id)}>
+                          {isExpanded ? "Show Less" : "Show More"}
+                        </Button>
+                      )}
+                    </React.Fragment>
+                  }
+                />
+              </ListItem>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mt={1}
+              >
+                <Box>
+                  <IconButton onClick={() => onLikePost(post._id)}>
+                    <ThumbUp
+                      color={
+                        post.likes &&
+                        currentUser &&
+                        post.likes.includes(currentUser._id)
+                          ? "primary"
+                          : "inherit"
                       }
                     />
-                  </ListItem>
-                </Box>
-                <Box sx={{ p: 2 }}>
-                  {isLongPost && (
-                    <Button
-                      onClick={() => togglePostExpansion(post._id)}
-                      endIcon={isExpanded ? <ExpandLess /> : <ExpandMore />}
-                      fullWidth
-                      sx={{ mb: 1 }}
-                    >
-                      {isExpanded ? "Collapse" : "Read more"}
-                    </Button>
-                  )}
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
+                  </IconButton>
+                  <Typography component="span">
+                    {post.likes ? post.likes.length : 0} likes
+                  </Typography>
+                  <IconButton
+                    onClick={() =>
+                      setActiveCommentPost(
+                        post._id === activeCommentPost ? null : post._id
+                      )
+                    }
                   >
-                    <Box>
-                      <IconButton onClick={() => onLikePost(post._id)}>
-                        <ThumbUp
-                          color={
-                            post.likes &&
-                            currentUser &&
-                            post.likes.includes(currentUser._id)
-                              ? "primary"
-                              : "inherit"
+                    <Comment />
+                  </IconButton>
+                  <Typography component="span">
+                    {post.comments ? post.comments.length : 0} comments
+                  </Typography>
+                </Box>
+                <Typography variant="caption">
+                  {new Date(post.createdAt).toLocaleString()}
+                </Typography>
+              </Box>
+              {activeCommentPost === post._id && (
+                <Box display="flex" mt={2}>
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Write a comment..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    size="small"
+                  />
+                  <IconButton onClick={() => handleSubmitComment(post._id)}>
+                    <Send />
+                  </IconButton>
+                </Box>
+              )}
+              {post.comments && post.comments.length > 0 && (
+                <List>
+                  {post.comments.map((comment, index) => {
+                    const avatarSrc =
+                      comment.user && comment.user._id
+                        ? `/api/users/avatar/${comment.user._id}`
+                        : `/api/users/avatar/${comment.user}`
+                    return (
+                      <ListItem key={index} alignItems="flex-start">
+                        <ListItemAvatar>
+                          <Avatar src={avatarSrc} alt={comment.username} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={comment.username}
+                          secondary={
+                            <React.Fragment>
+                              <Typography
+                                component="span"
+                                variant="body2"
+                                color="text.primary"
+                              >
+                                {new Date(comment.date).toLocaleString()} -
+                              </Typography>
+                              {" " + comment.text}
+                            </React.Fragment>
                           }
                         />
-                      </IconButton>
-                      <Typography component="span">
-                        {post.likes ? post.likes.length : 0} likes
-                      </Typography>
-                      <IconButton
-                        onClick={() => setActiveCommentPost(post._id)}
-                      >
-                        <Comment />
-                      </IconButton>
-                      <Typography component="span">
-                        {post.comments ? post.comments.length : 0} comments
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption">
-                      {new Date(post.createdAt).toLocaleString()}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Paper>
-            </Grid>
+                      </ListItem>
+                    )
+                  })}
+                </List>
+              )}
+            </Paper>
           )
         })}
-      </Grid>
-
+      </List>
       <AuthorDetailsPopup
         open={authorPopupOpen}
         onClose={() => setAuthorPopupOpen(false)}
         author={selectedAuthor}
       />
-    </Box>
+    </>
   )
 }
 
