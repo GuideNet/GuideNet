@@ -154,8 +154,12 @@ const Community = ({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: 600,
             p: 4,
+            display: "flex",
+            flexDirection: "column",
+            maxHeight: "90vh",
+            overflowY: "auto",
           }}
         >
           <Typography variant="h6" gutterBottom>
@@ -183,9 +187,13 @@ const Community = ({
                 ["clean"],
               ],
             }}
-            style={{ height: "200px", marginBottom: "20px" }}
+            style={{ height: "200px", marginBottom: "30px" }} // Reduced bottom margin
           />
-          <Box mt={2} display="flex" justifyContent="flex-end">
+          <Box
+            mt={3} // Reduced top margin
+            display="flex"
+            justifyContent="flex-end"
+          >
             <Button onClick={handleClose} sx={{ mr: 1 }}>
               Cancel
             </Button>
@@ -240,9 +248,10 @@ const Community = ({
                       <Typography
                         component="div"
                         dangerouslySetInnerHTML={{
-                          __html: isExpanded
-                            ? post.content
-                            : post.content.slice(0, 300) + "...",
+                          __html:
+                            isExpanded || post.content.length <= 300
+                              ? post.content
+                              : post.content.slice(0, 300) + "...",
                         }}
                       />
                       {isLongPost && (
