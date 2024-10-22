@@ -47,12 +47,8 @@ router.put("/profile", auth, upload.single("avatar"), async (req, res) => {
     // Update fields
     if (role) user.role = role
     if (req.file) {
-      user.avatar.data = fs.readFileSync(
-        path.join(__dirname, "..", req.file.path)
-      )
+      user.avatar.data = req.file.buffer
       user.avatar.contentType = req.file.mimetype
-      // Remove the file from the uploads folder
-      fs.unlinkSync(path.join(__dirname, "..", req.file.path))
     }
 
     await user.save()
