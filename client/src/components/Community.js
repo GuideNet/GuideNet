@@ -23,6 +23,8 @@ import {
 } from "@mui/icons-material"
 import AuthorDetailsPopup from "./AuthorDetailsPopup"
 import api from "../utils/api"
+import ReactQuill from "react-quill"
+import "react-quill/dist/quill.snow.css"
 
 const Community = ({
   searchQuery,
@@ -47,8 +49,7 @@ const Community = ({
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
 
-  const handleNewPostChange = (e) => {
-    const { name, value } = e.target
+  const handleNewPostChange = (name, value) => {
     setNewPost((prev) => ({ ...prev, [name]: value }))
   }
 
@@ -151,7 +152,7 @@ const Community = ({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: 600,
             p: 4,
           }}
         >
@@ -164,19 +165,13 @@ const Community = ({
             placeholder="Title"
             name="title"
             value={newPost.title}
-            onChange={handleNewPostChange}
+            onChange={(e) => handleNewPostChange("title", e.target.value)}
             sx={{ mb: 2 }}
           />
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Content"
-            name="content"
+          <ReactQuill
             value={newPost.content}
-            onChange={handleNewPostChange}
-            multiline
-            rows={3}
-            sx={{ mb: 2 }}
+            onChange={(value) => handleNewPostChange("content", value)}
+            style={{ height: "200px", marginBottom: "20px" }}
           />
           <Box mt={2} display="flex" justifyContent="flex-end">
             <Button onClick={handleClose} sx={{ mr: 1 }}>
@@ -246,9 +241,10 @@ const Community = ({
                             {post.author.username}
                           </Typography>
                           {" — "}
-                          <Typography component="span">
-                            {post.content}
-                          </Typography>
+                          <Typography
+                            component="div"
+                            dangerouslySetInnerHTML={{ __html: post.content }}
+                          />
                           {isLongPost && !isExpanded && (
                             <Box
                               sx={{
