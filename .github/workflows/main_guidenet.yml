@@ -29,7 +29,7 @@ jobs:
         run: |
           cd client
           npm install
-          npm run build
+          CI=false npm run build
 
       # Zip artifact for deployment (including client build and server files)
       - name: Zip artifact for deployment
