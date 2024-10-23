@@ -85,6 +85,19 @@ router.get("/avatar/:id", async (req, res) => {
   }
 })
 
+router.get("/:id/username", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" })
+    }
+    res.json({ username: user.username })
+  } catch (err) {
+    console.error(err.message)
+    res.status(500).send("Server Error")
+  }
+})
+
 // If you have a file upload route, modify it like this:
 router.post("/upload", auth, upload.single("file"), async (req, res) => {
   if (!req.file) {

@@ -184,6 +184,30 @@ const Dashboard = () => {
     }
   }
 
+  const handleEditPost = async (updatedPost) => {
+    try {
+      const res = await api.put(`/api/posts/${updatedPost._id}`, updatedPost)
+      setCommunityPosts((prevPosts) =>
+        prevPosts.map((p) => (p._id === updatedPost._id ? res.data : p))
+      )
+    } catch (err) {
+      console.error("Error editing post:", err)
+    }
+  }
+
+  const handleDeletePost = async (postId) => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      try {
+        await api.delete(`/api/posts/${postId}`)
+        setCommunityPosts((prevPosts) =>
+          prevPosts.filter((post) => post._id !== postId)
+        )
+      } catch (err) {
+        console.error("Error deleting post:", err)
+      }
+    }
+  }
+
   const filteredPosts = Array.isArray(communityPosts)
     ? communityPosts.filter(
         (post) =>
@@ -213,6 +237,8 @@ const Dashboard = () => {
             onLikePost={handleLikePost}
             onCommentPost={handleCommentPost}
             currentUser={userData}
+            onEditPost={handleEditPost}
+            onDeletePost={handleDeletePost}
           />
         )
     }

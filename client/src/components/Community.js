@@ -20,6 +20,8 @@ import {
   Send,
   Add as AddIcon,
   Search,
+  Edit,
+  Delete,
 } from "@mui/icons-material"
 import AuthorDetailsPopup from "./AuthorDetailsPopup"
 import axios from "axios"
@@ -34,6 +36,8 @@ const Community = ({
   onLikePost,
   onCommentPost,
   currentUser,
+  onEditPost,
+  onDeletePost,
 }) => {
   const [open, setOpen] = useState(false)
   const [newPost, setNewPost] = useState({ title: "", content: "" })
@@ -42,6 +46,36 @@ const Community = ({
   const [selectedAuthor, setSelectedAuthor] = useState(null)
   const [authorPopupOpen, setAuthorPopupOpen] = useState(false)
   const [expandedPosts, setExpandedPosts] = useState({})
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [editingPost, setEditingPost] = useState(null)
+  const [authorUsernames, setAuthorUsernames] = useState({})
+
+  useEffect(() => {
+    const fetchMissingUsernames = async () => {
+      const missingUsernames = communityPosts
+        .filter((post) => !post.author.username)
+        .map((post) => post.author._id || post.author)
+
+      for (const authorId of missingUsernames) {
+        if (!authorUsernames[authorId]) {
+          try {
+            const response = await axios.get(`/api/users/${authorId}/username`)
+            setAuthorUsernames((prev) => ({
+              ...prev,
+              [authorId]: response.data.username,
+            }))
+          } catch (error) {
+            console.error(
+              `Error fetching username for author ${authorId}:`,
+              error
+            )
+          }
+        }
+      }
+    }
+
+    fetchMissingUsernames()
+  }, [communityPosts, authorUsernames])
 
   useEffect(() => {}, [searchQuery, communityPosts])
 
@@ -114,6 +148,17 @@ const Community = ({
 
   const handleExpandPost = (postId) => {
     setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }))
+  }
+
+  const handleOpenEditModal = (post) => {
+    setEditingPost(post)
+    setEditModalOpen(true)
+  }
+
+  const getAuthorUsername = (author) => {
+    if (author.username) return author.username
+    const authorId = author._id || author
+    return authorUsernames[authorId] || "Loading..."
   }
 
   return (
@@ -208,6 +253,74 @@ const Community = ({
         </Paper>
       </Modal>
 
+      <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+        <Paper
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 600,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Edit Post
+          </Typography>
+          {editingPost && (
+            <>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Title"
+                name="title"
+                value={editingPost.title}
+                onChange={(e) =>
+                  setEditingPost({ ...editingPost, title: e.target.value })
+                }
+                sx={{ mb: 2 }}
+              />
+              <ReactQuill
+                value={editingPost.content}
+                onChange={(content) =>
+                  setEditingPost({ ...editingPost, content })
+                }
+                placeholder="Content"
+                modules={{
+                  toolbar: [
+                    [{ header: [1, 2, false] }],
+                    ["bold", "italic", "underline", "strike", "blockquote"],
+                    [{ list: "ordered" }, { list: "bullet" }],
+                    ["link", "image"],
+                    ["clean"],
+                  ],
+                }}
+                style={{ height: "200px", marginBottom: "30px" }}
+              />
+              <Box mt={3} display="flex" justifyContent="flex-end">
+                <Button onClick={() => setEditModalOpen(false)} sx={{ mr: 1 }}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    onEditPost(editingPost)
+                    setEditModalOpen(false)
+                  }}
+                  sx={{ bgcolor: "#F3C111", color: "white" }}
+                >
+                  Save Changes
+                </Button>
+              </Box>
+            </>
+          )}
+        </Paper>
+      </Modal>
+
       <List>
         {communityPosts.map((post) => {
           const isExpanded = expandedPosts[post._id]
@@ -218,17 +331,35 @@ const Community = ({
               <ListItem alignItems="flex-start">
                 <ListItemAvatar>
                   <Avatar
-                    src={`/api/users/avatar/${post.author._id}`}
-                    alt={post.author.username}
-                    onClick={() => handleAuthorClick(post.author)}
+                    src={`/api/users/avatar/${post.author._id || post.author}`}
+                    alt={getAuthorUsername(post.author)}
+                    onClick={() =>
+                      post.author && handleAuthorClick(post.author)
+                    }
                     sx={{ cursor: "pointer" }}
                   />
                 </ListItemAvatar>
                 <ListItemText
                   primary={
-                    <Typography variant="h5" component="div" gutterBottom>
-                      {post.title}
-                    </Typography>
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Typography variant="h5" component="div">
+                        {post.title}
+                      </Typography>
+                      {currentUser && currentUser._id === post.author._id && (
+                        <Box>
+                          <IconButton onClick={() => handleOpenEditModal(post)}>
+                            <Edit />
+                          </IconButton>
+                          <IconButton onClick={() => onDeletePost(post._id)}>
+                            <Delete />
+                          </IconButton>
+                        </Box>
+                      )}
+                    </Box>
                   }
                   secondary={
                     <React.Fragment>
@@ -242,7 +373,7 @@ const Community = ({
                           setAuthorPopupOpen(true)
                         }}
                       >
-                        {post.author.username}
+                        {getAuthorUsername(post.author)}
                       </Typography>
                       {" — "}
                       <Typography
